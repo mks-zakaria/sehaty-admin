@@ -1,6 +1,10 @@
 import type { Config } from 'tailwindcss';
 
+/** Wrap an RGB-channel CSS variable so Tailwind can inject alpha values. */
+const token = (name: string) => `rgb(var(${name}) / <alpha-value>)`;
+
 const config: Config = {
+  darkMode: ['selector', '[data-theme="dark"]'],
   content: [
     './app/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -9,12 +13,22 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // Semantic, theme-aware surfaces & text.
+        surface: {
+          DEFAULT: token('--surface'),
+          card: token('--surface-card'),
+        },
+        content: {
+          DEFAULT: token('--text'),
+          muted: token('--text-muted'),
+        },
+        line: token('--border'),
+        // Soft-blue brand, kept across both themes.
         brand: {
-          // Soft blue primary
-          DEFAULT: '#2b73b3',
-          dark: '#1b3d5e',
-          light: '#eaf2fa',
-          mint: '#2fae9b',
+          DEFAULT: token('--brand'),
+          hover: token('--brand-hover'),
+          soft: token('--brand-soft'),
+          on: token('--on-brand'),
         },
       },
     },

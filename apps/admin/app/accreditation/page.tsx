@@ -67,22 +67,20 @@ export default function AccreditationPage() {
     <ConsoleShell>
       <div className="mx-auto max-w-3xl">
         <header className="mb-6">
-          <h1 className="text-2xl font-semibold text-brand-dark">
-            Accreditation
-          </h1>
-          <p className="mt-1 text-sm text-brand-dark/60">
+          <h1 className="text-2xl font-semibold text-content">Accreditation</h1>
+          <p className="mt-1 text-sm text-content-muted">
             Review and approve doctors awaiting accreditation.
           </p>
         </header>
 
         {loading ? (
-          <div className="flex items-center gap-3 py-16 text-brand-dark/60">
+          <div className="flex items-center gap-3 py-16 text-content-muted">
             <Spinner />
             <span>Loading pending doctors…</span>
           </div>
         ) : error ? (
-          <Card className="border-red-200 bg-red-50">
-            <p role="alert" className="text-sm text-red-700">
+          <Card className="border-red-200 bg-red-50 dark:border-red-900/60 dark:bg-red-950/40">
+            <p role="alert" className="text-sm text-red-700 dark:text-red-300">
               {error}
             </p>
             <Button
@@ -95,7 +93,7 @@ export default function AccreditationPage() {
           </Card>
         ) : items.length === 0 ? (
           <Card className="text-center">
-            <p className="text-sm text-brand-dark/60">
+            <p className="text-sm text-content-muted">
               No doctors are awaiting accreditation. All caught up.
             </p>
           </Card>
@@ -105,7 +103,7 @@ export default function AccreditationPage() {
               <li key={pro.user_id}>
                 <Card className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <p className="font-medium text-brand-dark">
+                    <p className="font-medium text-content">
                       {pro.full_name}
                       {pro.speciality && (
                         <span className="ml-2 text-sm font-normal text-brand">
@@ -113,7 +111,7 @@ export default function AccreditationPage() {
                         </span>
                       )}
                     </p>
-                    <p className="mt-1 text-sm text-brand-dark/60">
+                    <p className="mt-1 text-sm text-content-muted">
                       License {pro.license_no}
                       {pro.city && <> · {pro.city}</>} · {pro.email}
                     </p>

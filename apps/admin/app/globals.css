@@ -2,13 +2,56 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Semantic design tokens.
+ * Values are space-separated RGB channels so Tailwind can inject alpha
+ * (e.g. `bg-brand/10`, `ring-brand/30`) via the `<alpha-value>` placeholder.
+ * Light is the default; dark is applied via BOTH the OS preference and a
+ * manual `data-theme="dark"` toggle. A manual `data-theme="light"` opts out
+ * of the OS-dark media query.
+ */
 :root {
-  --background: #f5f8fc;
-  --foreground: #1b3d5e;
+  --surface: 245 248 252; /* #f5f8fc */
+  --surface-card: 255 255 255; /* #ffffff */
+  --text: 27 61 94; /* #1b3d5e */
+  --text-muted: 82 112 140; /* #52708c */
+  --border: 214 227 240; /* #d6e3f0 */
+  --brand: 37 104 163; /* #2568a3 — soft blue */
+  --brand-hover: 27 78 125; /* #1b4e7d */
+  --brand-soft: 234 242 250; /* #eaf2fa */
+  --on-brand: 255 255 255; /* text on a brand-filled surface */
+}
+
+/* Dark via OS preference, unless the user manually forced light. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --surface: 15 22 34; /* #0f1622 */
+    --surface-card: 24 33 47; /* #18212f */
+    --text: 230 237 245; /* #e6edf5 */
+    --text-muted: 159 178 199; /* #9fb2c7 */
+    --border: 44 58 77; /* #2c3a4d */
+    --brand: 95 165 223; /* #5fa5df — lighter soft blue for contrast */
+    --brand-hover: 123 184 234; /* #7bb8ea */
+    --brand-soft: 29 44 63; /* #1d2c3f */
+    --on-brand: 11 20 32; /* #0b1420 */
+  }
+}
+
+/* Dark via manual toggle (wins over the media query). */
+:root[data-theme='dark'] {
+  --surface: 15 22 34;
+  --surface-card: 24 33 47;
+  --text: 230 237 245;
+  --text-muted: 159 178 199;
+  --border: 44 58 77;
+  --brand: 95 165 223;
+  --brand-hover: 123 184 234;
+  --brand-soft: 29 44 63;
+  --on-brand: 11 20 32;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
+  background: rgb(var(--surface));
+  color: rgb(var(--text));
   -webkit-font-smoothing: antialiased;
 }
