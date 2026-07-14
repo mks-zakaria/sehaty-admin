@@ -75,6 +75,10 @@ export const api = {
     const res = await http.post<T>(path, body ?? {});
     return res.data;
   },
+  put: async <T>(path: string, body?: unknown): Promise<T> => {
+    const res = await http.put<T>(path, body ?? {});
+    return res.data;
+  },
 };
 
 /**
@@ -237,4 +241,67 @@ export function moderateReview(
   return api.post<Review>(`/api/v1/admin/reviews/${reviewId}/moderate`, {
     action,
   });
+}
+
+// ---- Configuration (ranking weights + feature flags) ----
+
+/**
+ * The doctor-locator ranking weights — mirrors `RankingWeightsOut` in
+ * sehaty-api. Each weight scales one signal in the search ranking score.
+ */
+export interface RankingWeights {
+  w_rating: number;
+  w_distance: number;
+  w_responsiveness: number;
+  w_verified: number;
+  w_recency: number;
+}
+
+/** The tunable weight keys, in display order. */
+export type RankingWeightKey = keyof RankingWeights;
+
+/**
+ * A partial update of the ranking weights — mirrors `RankingWeightsIn`. Only
+ * the weights actually sent are applied server-side; the rest stay untouched.
+ */
+export type RankingWeightsInput = Partial<RankingWeights>;
+
+/** Every feature flag as a `{key: enabled}` mapping (`FeatureFlagsOut`). */
+export interface FeatureFlags {
+  flags: Record<string, boolean>;
+}
+
+/** A single feature flag row — mirrors `FeatureFlagOut`. */
+export interface FeatureFlag {
+  key: string;
+  enabled: boolean;
+  description: string | null;
+}
+
+/** Load the live ranking weights (defaults until an admin tunes them). */
+export function getRankingWeights(): Promise<RankingWeights> {
+  return api.get<RankingWeights>('/api/v1/admin/config/ranking-weights');
+}
+
+/** Update one or more ranking weights; unspecified weights stay unchanged. */
+export function setRankingWeights(
+  body: RankingWeightsInput,
+): Promise<RankingWeights> {
+  return api.put<RankingWeights>('/api/v1/admin/config/ranking-weights', body);
+}
+
+/** Load every feature flag as a `{key: enabled}` mapping. */
+export function getFeatureFlags(): Promise<FeatureFlags> {
+  return api.get<FeatureFlags>('/api/v1/admin/config/feature-flags');
+}
+
+/** Create or flip a named feature flag (upsert); returns the updated flag. */
+export function setFeatureFlag(
+  key: string,
+  enabled: boolean,
+): Promise<FeatureFlag> {
+  return api.put<FeatureFlag>(
+    `/api/v1/admin/config/feature-flags/${encodeURIComponent(key)}`,
+    { enabled },
+  );
 }

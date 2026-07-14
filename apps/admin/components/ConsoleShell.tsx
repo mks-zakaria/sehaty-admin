@@ -9,7 +9,7 @@ const NAV_SECTIONS = [
   { label: 'Users', href: '#', enabled: false },
   { label: 'Subscriptions', href: '#', enabled: false },
   { label: 'Reviews', href: '/moderation', enabled: true },
-  { label: 'Ranking', href: '#', enabled: false },
+  { label: 'Ranking', href: '/ranking', enabled: true },
 ];
 
 export function ConsoleShell({ children }: { children: ReactNode }) {
