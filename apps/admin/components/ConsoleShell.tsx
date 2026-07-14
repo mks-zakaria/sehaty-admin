@@ -8,7 +8,7 @@ const NAV_SECTIONS = [
   { label: 'Billing', href: '/billing', enabled: true },
   { label: 'Users', href: '#', enabled: false },
   { label: 'Subscriptions', href: '#', enabled: false },
-  { label: 'Reviews', href: '#', enabled: false },
+  { label: 'Reviews', href: '/moderation', enabled: true },
   { label: 'Ranking', href: '#', enabled: false },
 ];
 
