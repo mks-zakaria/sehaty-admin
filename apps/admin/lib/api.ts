@@ -305,3 +305,88 @@ export function setFeatureFlag(
     { enabled },
   );
 }
+
+// ---- Users (admin) ----
+
+/** A platform role. Mirrors `UserRole` in sehaty-api. */
+export type UserRole = 'DOCTOR' | 'PATIENT' | 'ADMIN';
+
+/** One row of the admin Users page — mirrors `AdminUserOut` in sehaty-api. */
+export interface AdminUser {
+  id: number;
+  email: string;
+  phone: string | null;
+  role: string;
+  is_active: boolean;
+  full_name: string | null;
+  created_at: string;
+}
+
+/** Filters for the admin Users listing; all optional. */
+export interface AdminUsersQuery {
+  role?: UserRole;
+  is_active?: boolean;
+  limit?: number;
+  offset?: number;
+}
+
+/** List platform users, newest first; optional role / active filters. */
+export function listAdminUsers(
+  query: AdminUsersQuery = {},
+): Promise<AdminUser[]> {
+  const params = new URLSearchParams();
+  if (query.role) params.set('role', query.role);
+  if (query.is_active !== undefined) {
+    params.set('is_active', String(query.is_active));
+  }
+  if (query.limit !== undefined) params.set('limit', String(query.limit));
+  if (query.offset !== undefined) params.set('offset', String(query.offset));
+  const qs = params.toString();
+  return api.get<AdminUser[]>(`/api/v1/admin/users${qs ? `?${qs}` : ''}`);
+}
+
+// ---- Subscriptions (admin) ----
+
+/** A subscription lifecycle status. Mirrors `SubscriptionStatus`. */
+export type SubscriptionStatus =
+  | 'TRIALING'
+  | 'ACTIVE'
+  | 'PAST_DUE'
+  | 'CANCELLED';
+
+/**
+ * One row of the admin Subscriptions page — mirrors `AdminSubscriptionOut`
+ * in sehaty-api.
+ */
+export interface AdminSubscription {
+  id: number;
+  doctor_id: number;
+  doctor_name: string | null;
+  plan_code: string;
+  plan_name: string;
+  price_month: number;
+  currency: string;
+  status: string;
+  current_period_end: string;
+}
+
+/** Filters for the admin Subscriptions listing; all optional. */
+export interface AdminSubscriptionsQuery {
+  status?: SubscriptionStatus;
+  limit?: number;
+  offset?: number;
+}
+
+/** List subscriptions, newest first; optional status filter. */
+export function listAdminSubscriptions(
+  query: AdminSubscriptionsQuery = {},
+): Promise<AdminSubscription[]> {
+  const params = new URLSearchParams();
+  if (query.status) params.set('status', query.status);
+  if (query.limit !== undefined) params.set('limit', String(query.limit));
+  if (query.offset !== undefined) params.set('offset', String(query.offset));
+  const qs = params.toString();
+  return api.get<AdminSubscription[]>(
+    `/api/v1/admin/subscriptions${qs ? `?${qs}` : ''}`,
+  );
+}
