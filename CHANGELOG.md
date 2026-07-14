@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/mks-zakaria/sehaty-admin/compare/v1.1.0...v1.2.0) (2026-07-14)
+
+
+### Features
+
+* add admin review moderation queue (approve/reject) ([#6](https://github.com/mks-zakaria/sehaty-admin/issues/6)) ([d5c178f](https://github.com/mks-zakaria/sehaty-admin/commit/d5c178fab1995be57808ec9bd34ad00fd6c42c49))
+
 # [1.1.0](https://github.com/mks-zakaria/sehaty-admin/compare/v1.0.0...v1.1.0) (2026-07-14)
 
 
