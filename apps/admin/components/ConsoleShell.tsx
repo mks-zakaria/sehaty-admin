@@ -6,8 +6,8 @@ const NAV_SECTIONS = [
   { label: 'Dashboard', href: '/dashboard', enabled: true },
   { label: 'Accreditation', href: '/accreditation', enabled: true },
   { label: 'Billing', href: '/billing', enabled: true },
-  { label: 'Users', href: '#', enabled: false },
-  { label: 'Subscriptions', href: '#', enabled: false },
+  { label: 'Users', href: '/users', enabled: true },
+  { label: 'Subscriptions', href: '/subscriptions', enabled: true },
   { label: 'Reviews', href: '/moderation', enabled: true },
   { label: 'Ranking', href: '/ranking', enabled: true },
 ];
