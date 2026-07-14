@@ -200,3 +200,41 @@ export function recordCashPayment(body: CashPaymentInput): Promise<Payment> {
 export function runDunning(): Promise<{ past_due: number }> {
   return api.post<{ past_due: number }>('/api/v1/billing/admin/dunning');
 }
+
+// ---- Reviews (moderation queue) ----
+
+export type ReviewDirection = 'PATIENT_ON_DOCTOR' | 'DOCTOR_ON_PATIENT';
+
+export type ReviewStatus = 'PENDING' | 'PUBLISHED' | 'FLAGGED' | 'REMOVED';
+
+/** A moderation decision — mirrors `ReviewModerateIn.action` in sehaty-api. */
+export type ReviewModerateAction = 'PUBLISH' | 'REMOVE';
+
+export interface Review {
+  id: number;
+  author_id: number;
+  target_id: number;
+  appointment_id: number;
+  direction: ReviewDirection;
+  stars: number;
+  comment: string | null;
+  status: ReviewStatus;
+  reply: string | null;
+  reply_at: string | null;
+  created_at: string;
+}
+
+/** The moderation queue: every PENDING or FLAGGED review, newest first. */
+export function listReviewQueue(): Promise<Review[]> {
+  return api.get<Review[]>('/api/v1/admin/reviews');
+}
+
+/** Publish or remove a review; returns the updated row. */
+export function moderateReview(
+  reviewId: number,
+  action: ReviewModerateAction,
+): Promise<Review> {
+  return api.post<Review>(`/api/v1/admin/reviews/${reviewId}/moderate`, {
+    action,
+  });
+}
