@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/mks-zakaria/sehaty-admin/compare/v1.2.0...v1.3.0) (2026-07-14)
+
+
+### Features
+
+* add admin ranking-weights and feature-flags configuration page ([#8](https://github.com/mks-zakaria/sehaty-admin/issues/8)) ([bc7ea10](https://github.com/mks-zakaria/sehaty-admin/commit/bc7ea10ac707a62019f611180bd07e6b62071840)), closes [#7](https://github.com/mks-zakaria/sehaty-admin/issues/7)
+
 # [1.2.0](https://github.com/mks-zakaria/sehaty-admin/compare/v1.1.0...v1.2.0) (2026-07-14)
 
 
