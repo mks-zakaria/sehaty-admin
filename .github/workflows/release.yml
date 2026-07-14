@@ -1,0 +1,36 @@
+name: release
+# Merge to main → npm semantic-release bumps version + CHANGELOG and tags vX.Y.Z.
+# SEHATY_CI_PAT pushes the release commit/tag to main.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: semantic-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.SEHATY_CI_PAT || secrets.GITHUB_TOKEN }}
+          GIT_AUTHOR_NAME: "MKS~ZAK"
+          GIT_AUTHOR_EMAIL: "60817481+mks-zakaria@users.noreply.github.com"
+          GIT_COMMITTER_NAME: "MKS~ZAK"
+          GIT_COMMITTER_EMAIL: "60817481+mks-zakaria@users.noreply.github.com"
+        run: npx semantic-release

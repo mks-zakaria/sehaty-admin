@@ -1,0 +1,12 @@
+{
+  "name": "@sehaty/eslint-config",
+  "version": "0.0.0",
+  "private": true,
+  "main": "index.json",
+  "files": [
+    "index.json"
+  ],
+  "dependencies": {
+    "eslint-config-next": "15.5.20"
+  }
+}
