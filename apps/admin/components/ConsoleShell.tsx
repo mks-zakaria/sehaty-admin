@@ -3,12 +3,13 @@ import type { ReactNode } from 'react';
 import { ThemeToggle } from './ThemeToggle';
 
 const NAV_SECTIONS = [
+  { label: 'Dashboard', href: '/dashboard', enabled: true },
   { label: 'Accreditation', href: '/accreditation', enabled: true },
+  { label: 'Billing', href: '/billing', enabled: true },
   { label: 'Users', href: '#', enabled: false },
   { label: 'Subscriptions', href: '#', enabled: false },
   { label: 'Reviews', href: '#', enabled: false },
   { label: 'Ranking', href: '#', enabled: false },
-  { label: 'Dashboard', href: '#', enabled: false },
 ];
 
 export function ConsoleShell({ children }: { children: ReactNode }) {

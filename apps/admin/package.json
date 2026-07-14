@@ -11,9 +11,11 @@
   },
   "dependencies": {
     "@sehaty/ui": "*",
+    "axios": "^1.18.1",
     "next": "15.5.20",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "react-hook-form": "^7.81.0"
   },
   "devDependencies": {
     "@sehaty/eslint-config": "*",
