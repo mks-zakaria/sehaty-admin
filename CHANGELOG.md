@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/mks-zakaria/sehaty-admin/compare/v1.3.0...v1.4.0) (2026-07-14)
+
+
+### Features
+
+* add admin users and subscriptions pages ([#10](https://github.com/mks-zakaria/sehaty-admin/issues/10)) ([8ea832d](https://github.com/mks-zakaria/sehaty-admin/commit/8ea832dc8d036f33fc257b55abc6919ad6578cdb))
+
 # [1.3.0](https://github.com/mks-zakaria/sehaty-admin/compare/v1.2.0...v1.3.0) (2026-07-14)
 
 
