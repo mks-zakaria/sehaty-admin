@@ -205,6 +205,20 @@ export function runDunning(): Promise<{ past_due: number }> {
   return api.post<{ past_due: number }>('/api/v1/billing/admin/dunning');
 }
 
+// ---- Appointment reminders (admin) ----
+
+/**
+ * Trigger the appointment-reminder sweep for confirmed appointments starting
+ * within the next `withinHours` window. Notifies patients of upcoming
+ * appointments; idempotent, so it is safe to run repeatedly. Returns the
+ * number of reminders actually sent.
+ */
+export function runReminders(withinHours = 24): Promise<{ reminded: number }> {
+  return api.post<{ reminded: number }>(
+    `/api/v1/admin/run-reminders?within_hours=${withinHours}`,
+  );
+}
+
 // ---- Reviews (moderation queue) ----
 
 export type ReviewDirection = 'PATIENT_ON_DOCTOR' | 'DOCTOR_ON_PATIENT';
