@@ -12,9 +12,13 @@ import {
   listPlans,
   recordCashPayment,
   runDunning,
+  runReminders,
   seedPlans,
   type Plan,
 } from '@/lib/api';
+
+const REMINDER_WINDOWS = [24, 48, 72] as const;
+type ReminderWindow = (typeof REMINDER_WINDOWS)[number];
 
 type Toast = { kind: 'success' | 'error'; message: string };
 
@@ -34,6 +38,8 @@ export default function BillingPage() {
   const [dunningBusy, setDunningBusy] = useState(false);
   const [seedBusy, setSeedBusy] = useState(false);
   const [exportBusy, setExportBusy] = useState(false);
+  const [reminderBusy, setReminderBusy] = useState(false);
+  const [reminderWindow, setReminderWindow] = useState<ReminderWindow>(24);
 
   const year = new Date().getFullYear();
 
@@ -133,6 +139,25 @@ export default function BillingPage() {
       guard(err, 'Failed to seed plans.');
     } finally {
       setSeedBusy(false);
+    }
+  }
+
+  async function handleReminders() {
+    setToast(null);
+    setReminderBusy(true);
+    try {
+      const { reminded } = await runReminders(reminderWindow);
+      setToast({
+        kind: 'success',
+        message:
+          reminded === 0
+            ? 'No reminders were due.'
+            : `${reminded} reminder${reminded === 1 ? '' : 's'} sent.`,
+      });
+    } catch (err) {
+      guard(err, 'Failed to send appointment reminders.');
+    } finally {
+      setReminderBusy(false);
     }
   }
 
@@ -304,6 +329,48 @@ export default function BillingPage() {
                     <Spinner label="Preparing export" />
                   ) : (
                     `Download accounting export (${year})`
+                  )}
+                </Button>
+              </div>
+            </Card>
+
+            <Card>
+              <h2 className="text-lg font-semibold text-content">
+                Appointment reminders
+              </h2>
+              <p className="mt-1 text-sm text-content-muted">
+                Notify patients of their upcoming confirmed appointments. Safe to
+                run repeatedly — sending is idempotent.
+              </p>
+              <div className="mt-4 flex flex-col gap-3">
+                <label className="flex flex-col gap-1 text-sm font-medium text-content">
+                  Look-ahead window
+                  <select
+                    value={reminderWindow}
+                    onChange={(event) =>
+                      setReminderWindow(
+                        Number(event.target.value) as ReminderWindow,
+                      )
+                    }
+                    disabled={reminderBusy}
+                    className={fieldClass}
+                  >
+                    {REMINDER_WINDOWS.map((hours) => (
+                      <option key={hours} value={hours}>
+                        Next {hours} hours
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <Button
+                  variant="secondary"
+                  onClick={() => void handleReminders()}
+                  disabled={reminderBusy}
+                >
+                  {reminderBusy ? (
+                    <Spinner label="Sending reminders" />
+                  ) : (
+                    'Send reminders now'
                   )}
                 </Button>
               </div>
