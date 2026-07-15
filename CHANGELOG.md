@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/mks-zakaria/sehaty-admin/compare/v1.4.0...v1.5.0) (2026-07-15)
+
+
+### Features
+
+* add send-appointment-reminders operations control to admin ([#12](https://github.com/mks-zakaria/sehaty-admin/issues/12)) ([259fd6e](https://github.com/mks-zakaria/sehaty-admin/commit/259fd6ecd265f6a3dc95cbb66a3b2d3f467a6cfb))
+
 # [1.4.0](https://github.com/mks-zakaria/sehaty-admin/compare/v1.3.0...v1.4.0) (2026-07-14)
 
 
