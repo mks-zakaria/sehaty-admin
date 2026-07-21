@@ -6,6 +6,12 @@ import { useForm } from 'react-hook-form';
 import { Button, Card, Spinner } from '@sehaty/ui';
 import { ConsoleShell } from '@/components/ConsoleShell';
 import {
+  Banner,
+  ErrorState,
+  PageHeader,
+  Skeleton,
+} from '@/components/ui';
+import {
   ApiError,
   getFeatureFlags,
   getRankingWeights,
@@ -52,6 +58,37 @@ type WeightsForm = Record<RankingWeightKey, string>;
 interface FlagForm {
   key: string;
   enabled: boolean;
+}
+
+function ConfigSkeleton() {
+  return (
+    <div
+      role="status"
+      aria-label="Loading configuration"
+      className="grid grid-cols-1 gap-6 lg:grid-cols-2"
+    >
+      {[0, 1].map((i) => (
+        <div
+          key={i}
+          className="rounded-xl border border-line bg-surface-card p-5 shadow-card"
+        >
+          <Skeleton className="h-5 w-40" />
+          <Skeleton className="mt-2 h-3.5 w-3/4" />
+          <div className="mt-6 flex flex-col gap-5">
+            {Array.from({ length: 4 }).map((_, j) => (
+              <div key={j} className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-3.5 w-24" />
+                  <Skeleton className="h-8 w-20" />
+                </div>
+                <Skeleton className="h-2 w-full rounded-full" />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export default function RankingPage() {
@@ -175,9 +212,6 @@ export default function RankingPage() {
     }
   });
 
-  const fieldClass =
-    'rounded-lg border border-line bg-surface px-3 py-2 text-sm font-normal text-content outline-none focus:border-brand focus:ring-2 focus:ring-brand/40';
-
   const flagEntries = Object.entries(flags).sort(([a], [b]) =>
     a.localeCompare(b),
   );
@@ -185,51 +219,22 @@ export default function RankingPage() {
   return (
     <ConsoleShell>
       <div className="mx-auto max-w-4xl">
-        <header className="mb-6">
-          <h1 className="text-2xl font-semibold text-content">
-            Ranking &amp; configuration
-          </h1>
-          <p className="mt-1 text-sm text-content-muted">
-            Tune the doctor-locator search ranking and toggle feature flags.
-          </p>
-        </header>
+        <PageHeader
+          title="Ranking & configuration"
+          description="Tune the doctor-locator search ranking and toggle feature flags."
+        />
 
-        {toast && (
-          <div
-            role="status"
-            className={
-              toast.kind === 'success'
-                ? 'mb-6 rounded-lg border border-brand/30 bg-brand-soft px-4 py-3 text-sm text-brand'
-                : 'mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300'
-            }
-          >
-            {toast.message}
-          </div>
-        )}
+        {toast && <Banner kind={toast.kind}>{toast.message}</Banner>}
 
         {loading ? (
-          <div className="flex items-center gap-3 py-16 text-content-muted">
-            <Spinner />
-            <span>Loading configuration…</span>
-          </div>
+          <ConfigSkeleton />
         ) : error ? (
-          <Card className="border-red-200 bg-red-50 dark:border-red-900/60 dark:bg-red-950/40">
-            <p role="alert" className="text-sm text-red-700 dark:text-red-300">
-              {error}
-            </p>
-            <Button
-              variant="secondary"
-              className="mt-4"
-              onClick={() => void load()}
-            >
-              Retry
-            </Button>
-          </Card>
+          <ErrorState message={error} onRetry={() => void load()} />
         ) : (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <section>
-              <Card>
-                <h2 className="text-lg font-semibold text-content">
+              <Card className="animate-fade-up">
+                <h2 className="text-lg font-semibold tracking-tight text-content">
                   Ranking weights
                 </h2>
                 <p className="mt-1 text-sm text-content-muted">
@@ -237,14 +242,18 @@ export default function RankingPage() {
                   higher weight makes that signal count for more; zero switches
                   it off.
                 </p>
-                <form onSubmit={onSaveWeights} className="mt-4 flex flex-col gap-5">
+                <form
+                  onSubmit={onSaveWeights}
+                  noValidate
+                  className="mt-5 flex flex-col gap-5"
+                >
                   {WEIGHTS.map(({ key, label, hint }) => {
                     const raw = watchWeights(key);
                     const sliderValue = Number.isFinite(Number(raw))
                       ? Math.max(0, Math.min(5, Number(raw)))
                       : 0;
                     return (
-                      <div key={key} className="flex flex-col gap-1">
+                      <div key={key} className="flex flex-col gap-1.5">
                         <div className="flex items-center justify-between gap-3">
                           <label
                             htmlFor={key}
@@ -258,6 +267,10 @@ export default function RankingPage() {
                             step="0.05"
                             min={0}
                             inputMode="decimal"
+                            aria-invalid={weightErrors[key] ? 'true' : undefined}
+                            aria-describedby={
+                              weightErrors[key] ? `${key}-error` : undefined
+                            }
                             {...registerWeight(key, {
                               required: 'Required.',
                               min: {
@@ -267,7 +280,7 @@ export default function RankingPage() {
                               validate: (v) =>
                                 !Number.isNaN(Number(v)) || 'Must be a number.',
                             })}
-                            className={`${fieldClass} w-24 text-right`}
+                            className="field w-24 text-right tabular-nums"
                           />
                         </div>
                         <input
@@ -283,11 +296,14 @@ export default function RankingPage() {
                               shouldValidate: true,
                             })
                           }
-                          className="h-2 w-full cursor-pointer appearance-none rounded-full bg-brand-soft accent-brand"
+                          className="h-2 w-full cursor-pointer appearance-none rounded-full bg-brand-soft accent-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface-card"
                         />
                         <p className="text-xs text-content-muted">{hint}</p>
                         {weightErrors[key] && (
-                          <span className="text-xs text-red-600 dark:text-red-400">
+                          <span
+                            id={`${key}-error`}
+                            className="text-xs font-medium text-danger"
+                          >
                             {weightErrors[key]?.message}
                           </span>
                         )}
@@ -310,8 +326,8 @@ export default function RankingPage() {
             </section>
 
             <section>
-              <Card>
-                <h2 className="text-lg font-semibold text-content">
+              <Card className="animate-fade-up" style={{ animationDelay: '60ms' }}>
+                <h2 className="text-lg font-semibold tracking-tight text-content">
                   Feature flags
                 </h2>
                 <p className="mt-1 text-sm text-content-muted">
@@ -326,24 +342,38 @@ export default function RankingPage() {
                     </p>
                     <form
                       onSubmit={onCreateFlag}
+                      noValidate
                       className="mt-4 flex flex-col gap-4"
                     >
-                      <label className="flex flex-col gap-1 text-sm font-medium text-content">
-                        Flag key
+                      <div className="flex flex-col gap-1.5">
+                        <label
+                          htmlFor="flag-key"
+                          className="text-sm font-medium text-content"
+                        >
+                          Flag key
+                        </label>
                         <input
+                          id="flag-key"
                           type="text"
                           placeholder="e.g. teleconsultation"
+                          aria-invalid={flagErrors.key ? 'true' : undefined}
+                          aria-describedby={
+                            flagErrors.key ? 'flag-key-error' : undefined
+                          }
                           {...registerFlag('key', {
                             required: 'Flag key is required.',
                           })}
-                          className={fieldClass}
+                          className="field"
                         />
                         {flagErrors.key && (
-                          <span className="text-xs text-red-600 dark:text-red-400">
+                          <span
+                            id="flag-key-error"
+                            className="text-xs font-medium text-danger"
+                          >
                             {flagErrors.key.message}
                           </span>
                         )}
-                      </label>
+                      </div>
                       <label className="flex items-center gap-2 text-sm font-medium text-content">
                         <input
                           type="checkbox"
@@ -366,7 +396,7 @@ export default function RankingPage() {
                     {flagEntries.map(([key, enabled]) => (
                       <li
                         key={key}
-                        className="flex items-center justify-between gap-3 rounded-lg border border-line px-3 py-2"
+                        className="flex items-center justify-between gap-3 rounded-lg border border-line px-3 py-2.5 transition-colors duration-150 hover:border-brand/40 hover:bg-brand/5"
                       >
                         <span className="text-sm font-medium text-content">
                           {key}
@@ -378,12 +408,12 @@ export default function RankingPage() {
                           aria-label={`Toggle ${key}`}
                           disabled={flagBusy === key}
                           onClick={() => void toggleFlag(key, !enabled)}
-                          className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface-card disabled:cursor-not-allowed disabled:opacity-60 ${
+                          className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-surface-card disabled:cursor-not-allowed disabled:opacity-60 ${
                             enabled ? 'bg-brand' : 'bg-content-muted/30'
                           }`}
                         >
                           <span
-                            className={`inline-block h-5 w-5 transform rounded-full bg-surface-card shadow transition-transform ${
+                            className={`inline-block h-5 w-5 transform rounded-full bg-surface-card shadow-card transition-transform duration-200 ${
                               enabled ? 'translate-x-5' : 'translate-x-0.5'
                             }`}
                           />

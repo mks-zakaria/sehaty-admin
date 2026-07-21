@@ -12,6 +12,10 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        // Inter, loaded via next/font in app/layout.tsx.
+        sans: ['var(--font-inter)', 'system-ui', '-apple-system', 'sans-serif'],
+      },
       colors: {
         // Semantic, theme-aware surfaces & text.
         surface: {
@@ -30,6 +34,28 @@ const config: Config = {
           soft: token('--brand-soft'),
           on: token('--on-brand'),
         },
+        // Status colours for pills, toasts, and validation.
+        success: {
+          DEFAULT: token('--success'),
+          soft: token('--success-soft'),
+        },
+        warning: {
+          DEFAULT: token('--warning'),
+          soft: token('--warning-soft'),
+        },
+        danger: {
+          DEFAULT: token('--danger'),
+          soft: token('--danger-soft'),
+        },
+      },
+      boxShadow: {
+        card: 'var(--shadow-card)',
+        raised: 'var(--shadow-raised)',
+      },
+      animation: {
+        'fade-up': 'fade-up 0.35s ease-out both',
+        'fade-in': 'fade-in 0.2s ease-out both',
+        'pop-in': 'pop-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) both',
       },
     },
   },

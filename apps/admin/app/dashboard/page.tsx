@@ -1,9 +1,26 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
-import { Button, Card, Spinner } from '@sehaty/ui';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
+import { Card } from '@sehaty/ui';
 import { ConsoleShell } from '@/components/ConsoleShell';
+import {
+  ErrorState,
+  PageHeader,
+  Skeleton,
+  StatGridSkeleton,
+} from '@/components/ui';
+import {
+  IconBadgeCheck,
+  IconGift,
+  IconHeartPulse,
+  IconRepeat,
+  IconStar,
+  IconStethoscope,
+  IconTrendingUp,
+  IconUsers,
+  IconWallet,
+} from '@/components/icons';
 import {
   ApiError,
   getKpis,
@@ -28,14 +45,48 @@ const MONTH_LABELS = [
   'Dec',
 ];
 
-function KpiCard({ label, value }: { label: string; value: number }) {
+function StatCard({
+  label,
+  value,
+  context,
+  icon,
+  delay = 0,
+}: {
+  label: string;
+  value: string;
+  context?: string;
+  icon: ReactNode;
+  delay?: number;
+}) {
   return (
-    <Card>
-      <p className="text-sm text-content-muted">{label}</p>
-      <p className="mt-2 text-3xl font-semibold text-content">
-        {value.toLocaleString()}
+    <Card
+      className="animate-fade-up"
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-sm font-medium text-content-muted">{label}</p>
+        <span
+          aria-hidden="true"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand"
+        >
+          {icon}
+        </span>
+      </div>
+      <p className="mt-1 text-3xl font-semibold tracking-tight text-content tabular-nums">
+        {value}
       </p>
+      {context && (
+        <p className="mt-1.5 text-xs text-content-muted">{context}</p>
+      )}
     </Card>
+  );
+}
+
+function SectionTitle({ children }: { children: ReactNode }) {
+  return (
+    <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-content-muted">
+      {children}
+    </h2>
   );
 }
 
@@ -85,80 +136,103 @@ export default function DashboardPage() {
     ? Math.max(1, ...revenue.by_month.map((m) => m.collected))
     : 1;
 
+  const verifiedShare =
+    kpis && kpis.doctors_total > 0
+      ? Math.round((kpis.doctors_verified / kpis.doctors_total) * 100)
+      : null;
+
   return (
     <ConsoleShell>
       <div className="mx-auto max-w-5xl">
-        <header className="mb-6">
-          <h1 className="text-2xl font-semibold text-content">Dashboard</h1>
-          <p className="mt-1 text-sm text-content-muted">
-            Live operational KPIs and this year&rsquo;s cash revenue.
-          </p>
-        </header>
+        <PageHeader
+          title="Dashboard"
+          description="Live operational KPIs and this year's cash revenue."
+        />
 
         {loading ? (
-          <div className="flex items-center gap-3 py-16 text-content-muted">
-            <Spinner />
-            <span>Loading dashboard…</span>
+          <div className="flex flex-col gap-8">
+            <StatGridSkeleton stats={6} />
+            <div className="rounded-xl border border-line bg-surface-card p-5 shadow-card">
+              <Skeleton className="h-3.5 w-40" />
+              <div className="mt-4 flex flex-col gap-3">
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-5/6" />
+                <Skeleton className="h-3 w-4/6" />
+              </div>
+            </div>
           </div>
         ) : error ? (
-          <Card className="border-red-200 bg-red-50 dark:border-red-900/60 dark:bg-red-950/40">
-            <p role="alert" className="text-sm text-red-700 dark:text-red-300">
-              {error}
-            </p>
-            <Button
-              variant="secondary"
-              className="mt-4"
-              onClick={() => void load()}
-            >
-              Retry
-            </Button>
-          </Card>
+          <ErrorState message={error} onRetry={() => void load()} />
         ) : kpis && revenue ? (
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-10">
             <section>
-              <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-content-muted">
-                Marketplace
-              </h2>
+              <SectionTitle>Marketplace</SectionTitle>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                <KpiCard label="Doctors (total)" value={kpis.doctors_total} />
-                <KpiCard
-                  label="Doctors (verified)"
-                  value={kpis.doctors_verified}
+                <StatCard
+                  label="Doctors"
+                  value={kpis.doctors_total.toLocaleString()}
+                  context="All registered professionals"
+                  icon={<IconStethoscope className="h-[18px] w-[18px]" />}
                 />
-                <KpiCard label="Patients" value={kpis.patients_total} />
-                <KpiCard
+                <StatCard
+                  label="Verified doctors"
+                  value={kpis.doctors_verified.toLocaleString()}
+                  context={
+                    verifiedShare !== null
+                      ? `${verifiedShare}% of all doctors accredited`
+                      : 'Awaiting first accreditations'
+                  }
+                  icon={<IconBadgeCheck className="h-[18px] w-[18px]" />}
+                  delay={40}
+                />
+                <StatCard
+                  label="Patients"
+                  value={kpis.patients_total.toLocaleString()}
+                  context="Registered patient accounts"
+                  icon={<IconUsers className="h-[18px] w-[18px]" />}
+                  delay={80}
+                />
+                <StatCard
                   label="Active subscriptions"
-                  value={kpis.active_subscriptions}
+                  value={kpis.active_subscriptions.toLocaleString()}
+                  context="Doctors on a paid plan"
+                  icon={<IconRepeat className="h-[18px] w-[18px]" />}
+                  delay={120}
                 />
-                <KpiCard
+                <StatCard
                   label="Reviews published"
-                  value={kpis.reviews_published}
+                  value={kpis.reviews_published.toLocaleString()}
+                  context="Live after moderation"
+                  icon={<IconStar className="h-[18px] w-[18px]" />}
+                  delay={160}
                 />
-                <KpiCard
+                <StatCard
                   label="Referrals rewarded"
-                  value={kpis.referrals_rewarded}
+                  value={kpis.referrals_rewarded.toLocaleString()}
+                  context="Successful referral payouts"
+                  icon={<IconGift className="h-[18px] w-[18px]" />}
+                  delay={200}
                 />
               </div>
             </section>
 
             <section>
-              <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-content-muted">
-                Appointments by status
-              </h2>
-              <Card>
+              <SectionTitle>Appointments by status</SectionTitle>
+              <Card className="animate-fade-up">
                 {Object.keys(kpis.appointments_by_status).length === 0 ? (
-                  <p className="text-sm text-content-muted">
+                  <div className="flex items-center gap-3 py-2 text-sm text-content-muted">
+                    <IconHeartPulse className="h-5 w-5 text-brand" />
                     No appointments recorded yet.
-                  </p>
+                  </div>
                 ) : (
-                  <ul className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3 lg:grid-cols-4">
+                  <ul className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3 lg:grid-cols-4">
                     {Object.entries(kpis.appointments_by_status).map(
                       ([status, count]) => (
                         <li key={status} className="flex flex-col">
-                          <span className="text-xs uppercase tracking-wide text-content-muted">
-                            {status}
+                          <span className="text-xs font-medium uppercase tracking-wider text-content-muted">
+                            {status.replace(/_/g, ' ')}
                           </span>
-                          <span className="mt-1 text-2xl font-semibold text-content">
+                          <span className="mt-1 text-2xl font-semibold tracking-tight text-content tabular-nums">
                             {count.toLocaleString()}
                           </span>
                         </li>
@@ -170,56 +244,52 @@ export default function DashboardPage() {
             </section>
 
             <section>
-              <h2 className="mb-3 text-sm font-medium uppercase tracking-wide text-content-muted">
-                Revenue · {revenue.year}
-              </h2>
+              <SectionTitle>Revenue · {revenue.year}</SectionTitle>
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <Card>
-                  <p className="text-sm text-content-muted">Total collected</p>
-                  <p className="mt-2 text-3xl font-semibold text-content">
-                    {currencyFmt(revenue.total_collected, revenue.currency)}
-                  </p>
-                </Card>
-                <Card>
-                  <p className="text-sm text-content-muted">
-                    MRR (monthly recurring)
-                  </p>
-                  <p className="mt-2 text-3xl font-semibold text-content">
-                    {currencyFmt(revenue.mrr, revenue.currency)}
-                  </p>
-                </Card>
-                <Card>
-                  <p className="text-sm text-content-muted">
-                    Active subscriptions
-                  </p>
-                  <p className="mt-2 text-3xl font-semibold text-content">
-                    {revenue.active_subscriptions.toLocaleString()}
-                  </p>
-                </Card>
+                <StatCard
+                  label="Total collected"
+                  value={currencyFmt(revenue.total_collected, revenue.currency)}
+                  context={`Cash collected in ${revenue.year}`}
+                  icon={<IconWallet className="h-[18px] w-[18px]" />}
+                />
+                <StatCard
+                  label="MRR"
+                  value={currencyFmt(revenue.mrr, revenue.currency)}
+                  context="Monthly recurring revenue"
+                  icon={<IconTrendingUp className="h-[18px] w-[18px]" />}
+                  delay={40}
+                />
+                <StatCard
+                  label="Active subscriptions"
+                  value={revenue.active_subscriptions.toLocaleString()}
+                  context="Currently billing"
+                  icon={<IconRepeat className="h-[18px] w-[18px]" />}
+                  delay={80}
+                />
               </div>
 
-              <Card className="mt-4">
-                <p className="mb-4 text-sm font-medium text-content">
+              <Card className="mt-4 animate-fade-up">
+                <p className="mb-4 text-sm font-semibold text-content">
                   Collected by month
                 </p>
-                <ul className="flex flex-col gap-2">
+                <ul className="flex flex-col gap-2.5">
                   {revenue.by_month.map((m) => (
                     <li key={m.month} className="flex items-center gap-3">
-                      <span className="w-10 shrink-0 text-xs text-content-muted">
+                      <span className="w-10 shrink-0 text-xs font-medium text-content-muted">
                         {MONTH_LABELS[m.month - 1] ?? m.month}
                       </span>
                       <div className="h-2 flex-1 overflow-hidden rounded-full bg-brand-soft">
                         <div
-                          className="h-full rounded-full bg-brand"
+                          className="h-full rounded-full bg-brand transition-[width] duration-500 ease-out"
                           style={{
                             width: `${Math.round((m.collected / maxCollected) * 100)}%`,
                           }}
                         />
                       </div>
-                      <span className="w-32 shrink-0 text-right text-sm text-content">
+                      <span className="w-32 shrink-0 text-right text-sm text-content tabular-nums">
                         {currencyFmt(m.collected, revenue.currency)}
                       </span>
-                      <span className="w-16 shrink-0 text-right text-xs text-content-muted">
+                      <span className="hidden w-16 shrink-0 text-right text-xs text-content-muted sm:block">
                         {m.payments} pmt{m.payments === 1 ? '' : 's'}
                       </span>
                     </li>
