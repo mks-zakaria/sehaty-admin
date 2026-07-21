@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/mks-zakaria/sehaty-admin/compare/v1.5.0...v1.6.0) (2026-07-21)
+
+
+### Features
+
+* **admin:** 2026 console redesign (shell, KPIs, tables, forms) ([a155f2a](https://github.com/mks-zakaria/sehaty-admin/commit/a155f2af2e16404d9aa5874205c1f830c0c13463))
+
 # [1.5.0](https://github.com/mks-zakaria/sehaty-admin/compare/v1.4.0...v1.5.0) (2026-07-15)
 
 
