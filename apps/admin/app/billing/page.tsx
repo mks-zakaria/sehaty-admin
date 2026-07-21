@@ -6,6 +6,14 @@ import { useForm } from 'react-hook-form';
 import { Button, Card, Spinner } from '@sehaty/ui';
 import { ConsoleShell } from '@/components/ConsoleShell';
 import {
+  Banner,
+  ConfirmDialog,
+  ErrorState,
+  PageHeader,
+  Skeleton,
+} from '@/components/ui';
+import { IconWallet } from '@/components/icons';
+import {
   ApiError,
   getAccountingExport,
   getToken,
@@ -17,16 +25,25 @@ import {
   type Plan,
 } from '@/lib/api';
 
+type Toast = { kind: 'success' | 'error'; message: string };
+
 const REMINDER_WINDOWS = [24, 48, 72] as const;
 type ReminderWindow = (typeof REMINDER_WINDOWS)[number];
-
-type Toast = { kind: 'success' | 'error'; message: string };
 
 interface PaymentForm {
   invoice_id: string;
   amount: string;
   receipt_no: string;
   paid_at: string;
+}
+
+function FieldError({ id, message }: { id: string; message?: string }) {
+  if (!message) return null;
+  return (
+    <span id={id} className="text-xs font-medium text-danger">
+      {message}
+    </span>
+  );
 }
 
 export default function BillingPage() {
@@ -36,6 +53,7 @@ export default function BillingPage() {
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
   const [dunningBusy, setDunningBusy] = useState(false);
+  const [dunningConfirm, setDunningConfirm] = useState(false);
   const [seedBusy, setSeedBusy] = useState(false);
   const [exportBusy, setExportBusy] = useState(false);
   const [reminderBusy, setReminderBusy] = useState(false);
@@ -114,31 +132,16 @@ export default function BillingPage() {
     setDunningBusy(true);
     try {
       const { past_due } = await runDunning();
+      setDunningConfirm(false);
       setToast({
         kind: 'success',
         message: `Dunning complete: ${past_due} subscription${past_due === 1 ? '' : 's'} flipped to past-due.`,
       });
     } catch (err) {
+      setDunningConfirm(false);
       guard(err, 'Failed to run dunning.');
     } finally {
       setDunningBusy(false);
-    }
-  }
-
-  async function handleSeed() {
-    setToast(null);
-    setSeedBusy(true);
-    try {
-      const { created } = await seedPlans();
-      setToast({
-        kind: 'success',
-        message: `Seeded ${created} plan${created === 1 ? '' : 's'}.`,
-      });
-      await load();
-    } catch (err) {
-      guard(err, 'Failed to seed plans.');
-    } finally {
-      setSeedBusy(false);
     }
   }
 
@@ -158,6 +161,23 @@ export default function BillingPage() {
       guard(err, 'Failed to send appointment reminders.');
     } finally {
       setReminderBusy(false);
+    }
+  }
+
+  async function handleSeed() {
+    setToast(null);
+    setSeedBusy(true);
+    try {
+      const { created } = await seedPlans();
+      setToast({
+        kind: 'success',
+        message: `Seeded ${created} plan${created === 1 ? '' : 's'}.`,
+      });
+      await load();
+    } catch (err) {
+      guard(err, 'Failed to seed plans.');
+    } finally {
+      setSeedBusy(false);
     }
   }
 
@@ -181,68 +201,74 @@ export default function BillingPage() {
     }
   }
 
-  const fieldClass =
-    'rounded-lg border border-line bg-surface px-3 py-2 text-sm font-normal text-content outline-none focus:border-brand focus:ring-2 focus:ring-brand/40';
-
   return (
     <ConsoleShell>
       <div className="mx-auto max-w-4xl">
-        <header className="mb-6">
-          <h1 className="text-2xl font-semibold text-content">Billing</h1>
-          <p className="mt-1 text-sm text-content-muted">
-            Cash payments, dunning, plan catalogue, and the year-end accounting
-            export.
-          </p>
-        </header>
+        <PageHeader
+          title="Billing"
+          description="Cash payments, dunning, plan catalogue, and the year-end accounting export."
+        />
 
-        {toast && (
-          <div
-            role="status"
-            className={
-              toast.kind === 'success'
-                ? 'mb-6 rounded-lg border border-brand/30 bg-brand-soft px-4 py-3 text-sm text-brand'
-                : 'mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300'
-            }
-          >
-            {toast.message}
-          </div>
-        )}
+        {toast && <Banner kind={toast.kind}>{toast.message}</Banner>}
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <section>
-            <Card>
-              <h2 className="text-lg font-semibold text-content">
+            <Card className="animate-fade-up">
+              <h2 className="text-lg font-semibold tracking-tight text-content">
                 Record cash payment
               </h2>
               <p className="mt-1 text-sm text-content-muted">
                 Record cash handed over at the desk. Idempotent per receipt
                 number.
               </p>
-              <form onSubmit={onRecordPayment} className="mt-4 flex flex-col gap-4">
-                <label className="flex flex-col gap-1 text-sm font-medium text-content">
-                  Invoice ID
+              <form
+                onSubmit={onRecordPayment}
+                noValidate
+                className="mt-5 flex flex-col gap-4"
+              >
+                <div className="flex flex-col gap-1.5">
+                  <label
+                    htmlFor="pay-invoice"
+                    className="text-sm font-medium text-content"
+                  >
+                    Invoice ID
+                  </label>
                   <input
+                    id="pay-invoice"
                     type="number"
                     inputMode="numeric"
+                    aria-invalid={errors.invoice_id ? 'true' : undefined}
+                    aria-describedby={
+                      errors.invoice_id ? 'pay-invoice-error' : undefined
+                    }
                     {...register('invoice_id', {
                       required: 'Invoice ID is required.',
                       min: { value: 1, message: 'Must be a positive id.' },
                     })}
-                    className={fieldClass}
+                    className="field"
                   />
-                  {errors.invoice_id && (
-                    <span className="text-xs text-red-600 dark:text-red-400">
-                      {errors.invoice_id.message}
-                    </span>
-                  )}
-                </label>
+                  <FieldError
+                    id="pay-invoice-error"
+                    message={errors.invoice_id?.message}
+                  />
+                </div>
 
-                <label className="flex flex-col gap-1 text-sm font-medium text-content">
-                  Amount
+                <div className="flex flex-col gap-1.5">
+                  <label
+                    htmlFor="pay-amount"
+                    className="text-sm font-medium text-content"
+                  >
+                    Amount
+                  </label>
                   <input
+                    id="pay-amount"
                     type="number"
                     step="0.01"
                     inputMode="decimal"
+                    aria-invalid={errors.amount ? 'true' : undefined}
+                    aria-describedby={
+                      errors.amount ? 'pay-amount-error' : undefined
+                    }
                     {...register('amount', {
                       required: 'Amount is required.',
                       min: {
@@ -250,42 +276,56 @@ export default function BillingPage() {
                         message: 'Amount must be greater than zero.',
                       },
                     })}
-                    className={fieldClass}
+                    className="field"
                   />
-                  {errors.amount && (
-                    <span className="text-xs text-red-600 dark:text-red-400">
-                      {errors.amount.message}
-                    </span>
-                  )}
-                </label>
+                  <FieldError
+                    id="pay-amount-error"
+                    message={errors.amount?.message}
+                  />
+                </div>
 
-                <label className="flex flex-col gap-1 text-sm font-medium text-content">
-                  Receipt number
+                <div className="flex flex-col gap-1.5">
+                  <label
+                    htmlFor="pay-receipt"
+                    className="text-sm font-medium text-content"
+                  >
+                    Receipt number
+                  </label>
                   <input
+                    id="pay-receipt"
                     type="text"
+                    aria-invalid={errors.receipt_no ? 'true' : undefined}
+                    aria-describedby={
+                      errors.receipt_no ? 'pay-receipt-error' : undefined
+                    }
                     {...register('receipt_no', {
                       required: 'Receipt number is required.',
                     })}
-                    className={fieldClass}
+                    className="field"
                   />
-                  {errors.receipt_no && (
-                    <span className="text-xs text-red-600 dark:text-red-400">
-                      {errors.receipt_no.message}
-                    </span>
-                  )}
-                </label>
+                  <FieldError
+                    id="pay-receipt-error"
+                    message={errors.receipt_no?.message}
+                  />
+                </div>
 
-                <label className="flex flex-col gap-1 text-sm font-medium text-content">
-                  Paid at{' '}
-                  <span className="font-normal text-content-muted">
-                    (optional — defaults to now)
-                  </span>
+                <div className="flex flex-col gap-1.5">
+                  <label
+                    htmlFor="pay-paid-at"
+                    className="text-sm font-medium text-content"
+                  >
+                    Paid at{' '}
+                    <span className="font-normal text-content-muted">
+                      (optional — defaults to now)
+                    </span>
+                  </label>
                   <input
+                    id="pay-paid-at"
                     type="datetime-local"
                     {...register('paid_at')}
-                    className={fieldClass}
+                    className="field"
                   />
-                </label>
+                </div>
 
                 <Button type="submit" disabled={isSubmitting} className="mt-1">
                   {isSubmitting ? (
@@ -299,19 +339,25 @@ export default function BillingPage() {
           </section>
 
           <section className="flex flex-col gap-6">
-            <Card>
-              <h2 className="text-lg font-semibold text-content">Operations</h2>
+            <Card className="animate-fade-up" style={{ animationDelay: '60ms' }}>
+              <h2 className="text-lg font-semibold tracking-tight text-content">
+                Operations
+              </h2>
               <p className="mt-1 text-sm text-content-muted">
-                Run the overdue-invoice sweep, seed the plan catalogue, or export
-                the {year} accounting trail.
+                Run the overdue-invoice sweep, seed the plan catalogue, or
+                export the {year} accounting trail.
               </p>
-              <div className="mt-4 flex flex-col gap-3">
+              <div className="mt-5 flex flex-col gap-3">
                 <Button
                   variant="secondary"
-                  onClick={() => void handleDunning()}
+                  onClick={() => setDunningConfirm(true)}
                   disabled={dunningBusy}
                 >
-                  {dunningBusy ? <Spinner label="Running dunning" /> : 'Run dunning'}
+                  {dunningBusy ? (
+                    <Spinner label="Running dunning" />
+                  ) : (
+                    'Run dunning'
+                  )}
                 </Button>
                 <Button
                   variant="secondary"
@@ -334,16 +380,16 @@ export default function BillingPage() {
               </div>
             </Card>
 
-            <Card>
-              <h2 className="text-lg font-semibold text-content">
+            <Card className="animate-fade-up" style={{ animationDelay: '120ms' }}>
+              <h2 className="text-lg font-semibold tracking-tight text-content">
                 Appointment reminders
               </h2>
               <p className="mt-1 text-sm text-content-muted">
                 Notify patients of their upcoming confirmed appointments. Safe to
                 run repeatedly — sending is idempotent.
               </p>
-              <div className="mt-4 flex flex-col gap-3">
-                <label className="flex flex-col gap-1 text-sm font-medium text-content">
+              <div className="mt-5 flex flex-col gap-3">
+                <label className="flex flex-col gap-1.5 text-sm font-medium text-content">
                   Look-ahead window
                   <select
                     value={reminderWindow}
@@ -353,7 +399,7 @@ export default function BillingPage() {
                       )
                     }
                     disabled={reminderBusy}
-                    className={fieldClass}
+                    className="field"
                   >
                     {REMINDER_WINDOWS.map((hours) => (
                       <option key={hours} value={hours}>
@@ -376,36 +422,44 @@ export default function BillingPage() {
               </div>
             </Card>
 
-            <Card>
-              <h2 className="text-lg font-semibold text-content">Plans</h2>
+            <Card className="animate-fade-up" style={{ animationDelay: '180ms' }}>
+              <h2 className="text-lg font-semibold tracking-tight text-content">
+                Plans
+              </h2>
               {loading ? (
-                <div className="mt-4 flex items-center gap-3 text-content-muted">
-                  <Spinner />
-                  <span>Loading plans…</span>
+                <div
+                  role="status"
+                  aria-label="Loading plans"
+                  className="mt-4 flex flex-col gap-2"
+                >
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between rounded-lg border border-line px-3 py-2.5"
+                    >
+                      <div className="flex flex-col gap-1.5">
+                        <Skeleton className="h-3.5 w-28" />
+                        <Skeleton className="h-3 w-16" />
+                      </div>
+                      <Skeleton className="h-4 w-20" />
+                    </div>
+                  ))}
                 </div>
               ) : error ? (
                 <div className="mt-4">
-                  <p role="alert" className="text-sm text-red-700 dark:text-red-300">
-                    {error}
-                  </p>
-                  <Button
-                    variant="secondary"
-                    className="mt-3"
-                    onClick={() => void load()}
-                  >
-                    Retry
-                  </Button>
+                  <ErrorState message={error} onRetry={() => void load()} />
                 </div>
               ) : plans.length === 0 ? (
-                <p className="mt-4 text-sm text-content-muted">
+                <div className="mt-4 flex items-center gap-3 rounded-lg border border-dashed border-line px-4 py-5 text-sm text-content-muted">
+                  <IconWallet className="h-5 w-5 shrink-0 text-brand" />
                   No plans in the catalogue yet. Use “Seed plans” above.
-                </p>
+                </div>
               ) : (
                 <ul className="mt-4 flex flex-col gap-2">
                   {plans.map((plan) => (
                     <li
                       key={plan.code}
-                      className="flex items-center justify-between rounded-lg border border-line px-3 py-2"
+                      className="flex items-center justify-between rounded-lg border border-line px-3 py-2.5 transition-colors duration-150 hover:border-brand/40 hover:bg-brand/5"
                     >
                       <div>
                         <p className="text-sm font-medium text-content">
@@ -413,13 +467,16 @@ export default function BillingPage() {
                         </p>
                         <p className="text-xs text-content-muted">{plan.code}</p>
                       </div>
-                      <span className="text-sm font-medium text-content">
+                      <span className="text-sm font-medium text-content tabular-nums">
                         {plan.price_month.toLocaleString(undefined, {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         })}{' '}
                         {plan.currency}
-                        <span className="text-content-muted"> /mo</span>
+                        <span className="font-normal text-content-muted">
+                          {' '}
+                          /mo
+                        </span>
                       </span>
                     </li>
                   ))}
@@ -428,6 +485,16 @@ export default function BillingPage() {
             </Card>
           </section>
         </div>
+
+        <ConfirmDialog
+          open={dunningConfirm}
+          title="Run the dunning sweep?"
+          body="Every subscription with an overdue invoice will be flipped to past-due. Doctors may lose visibility until they pay."
+          confirmLabel="Run dunning"
+          busy={dunningBusy}
+          onConfirm={() => void handleDunning()}
+          onCancel={() => setDunningConfirm(false)}
+        />
       </div>
     </ConsoleShell>
   );

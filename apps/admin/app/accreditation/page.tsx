@@ -5,12 +5,30 @@ import { useCallback, useEffect, useState } from 'react';
 import { Button, Card, Spinner } from '@sehaty/ui';
 import { ConsoleShell } from '@/components/ConsoleShell';
 import {
+  CardListSkeleton,
+  EmptyState,
+  ErrorState,
+  PageHeader,
+  StatusPill,
+} from '@/components/ui';
+import { IconBadgeCheck } from '@/components/icons';
+import {
   ApiError,
   accreditProfessional,
   getToken,
   listPendingProfessionals,
   type PendingProfessional,
 } from '@/lib/api';
+
+/** Initials for the avatar disc, e.g. "Dr Sara Alami" → "SA". */
+function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('');
+}
 
 export default function AccreditationPage() {
   const router = useRouter();
@@ -66,65 +84,72 @@ export default function AccreditationPage() {
   return (
     <ConsoleShell>
       <div className="mx-auto max-w-3xl">
-        <header className="mb-6">
-          <h1 className="text-2xl font-semibold text-content">Accreditation</h1>
-          <p className="mt-1 text-sm text-content-muted">
-            Review and approve doctors awaiting accreditation.
-          </p>
-        </header>
+        <PageHeader
+          title="Accreditation"
+          description="Review and approve doctors awaiting accreditation."
+          actions={
+            !loading && !error && items.length > 0 ? (
+              <StatusPill tone="warning">
+                {items.length} pending
+              </StatusPill>
+            ) : undefined
+          }
+        />
 
         {loading ? (
-          <div className="flex items-center gap-3 py-16 text-content-muted">
-            <Spinner />
-            <span>Loading pending doctors…</span>
-          </div>
+          <CardListSkeleton cards={3} />
         ) : error ? (
-          <Card className="border-red-200 bg-red-50 dark:border-red-900/60 dark:bg-red-950/40">
-            <p role="alert" className="text-sm text-red-700 dark:text-red-300">
-              {error}
-            </p>
-            <Button
-              variant="secondary"
-              className="mt-4"
-              onClick={() => void load()}
-            >
-              Retry
-            </Button>
-          </Card>
+          <ErrorState message={error} onRetry={() => void load()} />
         ) : items.length === 0 ? (
-          <Card className="text-center">
-            <p className="text-sm text-content-muted">
-              No doctors are awaiting accreditation. All caught up.
-            </p>
-          </Card>
+          <EmptyState
+            icon={<IconBadgeCheck className="h-6 w-6" />}
+            title="All caught up"
+            hint="No doctors are awaiting accreditation right now. New applications will appear here."
+          />
         ) : (
           <ul className="flex flex-col gap-3">
-            {items.map((pro) => (
-              <li key={pro.user_id}>
-                <Card className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="font-medium text-content">
-                      {pro.full_name}
-                      {pro.speciality && (
-                        <span className="ml-2 text-sm font-normal text-brand">
-                          {pro.speciality}
-                        </span>
-                      )}
-                    </p>
-                    <p className="mt-1 text-sm text-content-muted">
-                      License {pro.license_no}
-                      {pro.city && <> · {pro.city}</>} · {pro.email}
-                    </p>
+            {items.map((pro, index) => (
+              <li
+                key={pro.user_id}
+                className="animate-fade-up"
+                style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
+              >
+                <Card className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex min-w-0 items-center gap-4">
+                    <span
+                      aria-hidden="true"
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-soft text-sm font-semibold text-brand"
+                    >
+                      {initials(pro.full_name) || '?'}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="flex flex-wrap items-center gap-2 font-medium text-content">
+                        <span className="truncate">{pro.full_name}</span>
+                        {pro.speciality && (
+                          <StatusPill tone="brand" dot={false}>
+                            {pro.speciality}
+                          </StatusPill>
+                        )}
+                      </p>
+                      <p className="mt-1 truncate text-sm text-content-muted">
+                        License {pro.license_no}
+                        {pro.city && <> · {pro.city}</>} · {pro.email}
+                      </p>
+                    </div>
                   </div>
                   <Button
                     onClick={() => void handleAccredit(pro.user_id)}
                     disabled={pendingId === pro.user_id}
                     className="shrink-0"
+                    aria-label={`Accredit ${pro.full_name}`}
                   >
                     {pendingId === pro.user_id ? (
                       <Spinner label="Accrediting" />
                     ) : (
-                      'Accredit'
+                      <>
+                        <IconBadgeCheck className="h-4 w-4" />
+                        Accredit
+                      </>
                     )}
                   </Button>
                 </Card>

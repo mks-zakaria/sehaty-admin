@@ -6,6 +6,16 @@ import { useForm } from 'react-hook-form';
 import { Button, Card, Spinner } from '@sehaty/ui';
 import { ConsoleShell } from '@/components/ConsoleShell';
 import {
+  Banner,
+  CardListSkeleton,
+  ConfirmDialog,
+  EmptyState,
+  ErrorState,
+  PageHeader,
+  StatusPill,
+} from '@/components/ui';
+import { IconCheck, IconStar, IconX } from '@/components/icons';
+import {
   ApiError,
   getToken,
   listReviewQueue,
@@ -36,26 +46,12 @@ function Stars({ value }: { value: number }) {
   return (
     <span
       aria-label={`${rounded} out of 5 stars`}
-      className="text-base leading-none text-brand"
+      className="text-base leading-none text-warning"
     >
       <span aria-hidden="true">
         {'★'.repeat(rounded)}
         <span className="text-content-muted/40">{'★'.repeat(5 - rounded)}</span>
       </span>
-    </span>
-  );
-}
-
-function StatusBadge({ status }: { status: ReviewStatus }) {
-  const styles =
-    status === 'FLAGGED'
-      ? 'border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300'
-      : 'border-brand/30 bg-brand-soft text-brand';
-  return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium uppercase tracking-wide ${styles}`}
-    >
-      {status}
     </span>
   );
 }
@@ -74,6 +70,7 @@ export default function ModerationPage() {
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
   const [busy, setBusy] = useState<Busy>(null);
+  const [confirmTarget, setConfirmTarget] = useState<Review | null>(null);
 
   const { register, watch } = useForm<FilterForm>({
     defaultValues: { status: 'ALL', direction: 'ALL' },
@@ -127,6 +124,7 @@ export default function ModerationPage() {
       await moderateReview(review.id, action);
       // The review leaves the PENDING/FLAGGED queue — drop it optimistically.
       setReviews((prev) => prev.filter((r) => r.id !== review.id));
+      setConfirmTarget(null);
       setToast({
         kind: 'success',
         message:
@@ -139,6 +137,7 @@ export default function ModerationPage() {
         router.push('/login');
         return;
       }
+      setConfirmTarget(null);
       setToast({
         kind: 'error',
         message:
@@ -151,92 +150,95 @@ export default function ModerationPage() {
     }
   }
 
-  const selectClass =
-    'rounded-lg border border-line bg-surface px-3 py-2 text-sm font-normal text-content outline-none focus:border-brand focus:ring-2 focus:ring-brand/40';
-
   return (
     <ConsoleShell>
       <div className="mx-auto max-w-3xl">
-        <header className="mb-6">
-          <h1 className="text-2xl font-semibold text-content">
-            Review moderation
-          </h1>
-          <p className="mt-1 text-sm text-content-muted">
-            Approve or reject pending and flagged reviews before they go live.
-          </p>
-        </header>
+        <PageHeader
+          title="Review moderation"
+          description="Approve or reject pending and flagged reviews before they go live."
+          actions={
+            !loading && !error && reviews.length > 0 ? (
+              <StatusPill tone="warning">{reviews.length} in queue</StatusPill>
+            ) : undefined
+          }
+        />
 
-        {toast && (
-          <div
-            role="status"
-            className={
-              toast.kind === 'success'
-                ? 'mb-6 rounded-lg border border-brand/30 bg-brand-soft px-4 py-3 text-sm text-brand'
-                : 'mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300'
-            }
-          >
-            {toast.message}
-          </div>
-        )}
+        {toast && <Banner kind={toast.kind}>{toast.message}</Banner>}
 
         {!loading && !error && reviews.length > 0 && (
           <form className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end">
-            <label className="flex flex-col gap-1 text-sm font-medium text-content">
-              Status
-              <select {...register('status')} className={selectClass}>
+            <div className="flex flex-col gap-1.5">
+              <label
+                htmlFor="filter-status"
+                className="text-sm font-medium text-content"
+              >
+                Status
+              </label>
+              <select
+                id="filter-status"
+                {...register('status')}
+                className="field sm:w-44"
+              >
                 <option value="ALL">All</option>
                 <option value="PENDING">Pending</option>
                 <option value="FLAGGED">Flagged</option>
               </select>
-            </label>
-            <label className="flex flex-col gap-1 text-sm font-medium text-content">
-              Direction
-              <select {...register('direction')} className={selectClass}>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label
+                htmlFor="filter-direction"
+                className="text-sm font-medium text-content"
+              >
+                Direction
+              </label>
+              <select
+                id="filter-direction"
+                {...register('direction')}
+                className="field sm:w-52"
+              >
                 <option value="ALL">All</option>
                 <option value="PATIENT_ON_DOCTOR">Patient → doctor</option>
                 <option value="DOCTOR_ON_PATIENT">Doctor → patient</option>
               </select>
-            </label>
+            </div>
           </form>
         )}
 
         {loading ? (
-          <div className="flex items-center gap-3 py-16 text-content-muted">
-            <Spinner />
-            <span>Loading moderation queue…</span>
-          </div>
+          <CardListSkeleton cards={3} />
         ) : error ? (
-          <Card className="border-red-200 bg-red-50 dark:border-red-900/60 dark:bg-red-950/40">
-            <p role="alert" className="text-sm text-red-700 dark:text-red-300">
-              {error}
-            </p>
-            <Button
-              variant="secondary"
-              className="mt-4"
-              onClick={() => void load()}
-            >
-              Retry
-            </Button>
-          </Card>
+          <ErrorState message={error} onRetry={() => void load()} />
         ) : visible.length === 0 ? (
-          <Card className="text-center">
-            <p className="text-sm text-content-muted">
-              {reviews.length === 0
-                ? 'Queue is clear. No reviews are awaiting moderation.'
-                : 'No reviews match the current filters.'}
-            </p>
-          </Card>
+          <EmptyState
+            icon={<IconStar className="h-6 w-6" />}
+            title={
+              reviews.length === 0 ? 'Queue is clear' : 'Nothing matches'
+            }
+            hint={
+              reviews.length === 0
+                ? 'No reviews are awaiting moderation. New pending or flagged reviews will land here.'
+                : 'No reviews match the current filters. Try widening them.'
+            }
+          />
         ) : (
           <ul className="flex flex-col gap-3">
-            {visible.map((review) => {
+            {visible.map((review, index) => {
               const rowBusy = busy?.id === review.id;
               return (
-                <li key={review.id}>
+                <li
+                  key={review.id}
+                  className="animate-fade-up"
+                  style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}
+                >
                   <Card className="flex flex-col gap-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="flex items-center gap-3">
                         <Stars value={review.stars} />
-                        <StatusBadge status={review.status} />
+                        <StatusPill
+                          tone={review.status === 'FLAGGED' ? 'danger' : 'warning'}
+                        >
+                          {review.status}
+                        </StatusPill>
                       </div>
                       <span className="text-xs text-content-muted">
                         {dateFmt(review.created_at)}
@@ -244,9 +246,9 @@ export default function ModerationPage() {
                     </div>
 
                     {review.comment ? (
-                      <p className="text-sm text-content">
+                      <blockquote className="border-l-2 border-brand/40 pl-3 text-sm leading-relaxed text-content">
                         “{review.comment}”
-                      </p>
+                      </blockquote>
                     ) : (
                       <p className="text-sm italic text-content-muted">
                         No written comment.
@@ -261,29 +263,31 @@ export default function ModerationPage() {
                       · appointment #{review.appointment_id}
                     </p>
 
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-wrap gap-3 border-t border-line pt-4">
                       <Button
                         onClick={() => void handleModerate(review, 'PUBLISH')}
                         disabled={rowBusy}
                         className="shrink-0"
+                        aria-label={`Approve and publish review ${review.id}`}
                       >
                         {busy?.id === review.id && busy.action === 'PUBLISH' ? (
                           <Spinner label="Approving" />
                         ) : (
-                          'Approve (publish)'
+                          <>
+                            <IconCheck className="h-4 w-4" />
+                            Approve
+                          </>
                         )}
                       </Button>
                       <Button
-                        variant="secondary"
-                        onClick={() => void handleModerate(review, 'REMOVE')}
+                        variant="danger"
+                        onClick={() => setConfirmTarget(review)}
                         disabled={rowBusy}
                         className="shrink-0"
+                        aria-label={`Reject and remove review ${review.id}`}
                       >
-                        {busy?.id === review.id && busy.action === 'REMOVE' ? (
-                          <Spinner label="Rejecting" />
-                        ) : (
-                          'Reject (remove)'
-                        )}
+                        <IconX className="h-4 w-4" />
+                        Reject
                       </Button>
                     </div>
                   </Card>
@@ -292,6 +296,18 @@ export default function ModerationPage() {
             })}
           </ul>
         )}
+
+        <ConfirmDialog
+          open={confirmTarget !== null}
+          title={`Reject review #${confirmTarget?.id ?? ''}?`}
+          body="The review will be removed and will never be shown on the platform. This cannot be undone from the console."
+          confirmLabel="Reject review"
+          busy={busy?.action === 'REMOVE'}
+          onConfirm={() =>
+            confirmTarget && void handleModerate(confirmTarget, 'REMOVE')
+          }
+          onCancel={() => setConfirmTarget(null)}
+        />
       </div>
     </ConsoleShell>
   );

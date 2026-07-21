@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button, Card, Spinner } from '@sehaty/ui';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { IconAlert } from '@/components/icons';
 import { ApiError, login, setToken } from '@/lib/api';
 
 interface LoginForm {
@@ -18,7 +19,7 @@ export default function LoginPage() {
   const {
     register,
     handleSubmit,
-    formState: { isSubmitting },
+    formState: { isSubmitting, errors },
   } = useForm<LoginForm>({
     defaultValues: { email: '', password: '' },
   });
@@ -43,46 +44,100 @@ export default function LoginPage() {
       <div className="absolute right-4 top-4">
         <ThemeToggle />
       </div>
-      <Card className="w-full max-w-sm">
-        <div className="mb-6 text-center">
-          <h1 className="text-xl font-semibold text-content">Sehaty Admin</h1>
-          <p className="mt-1 text-sm text-content-muted">
-            Sign in to the staff console
-          </p>
-        </div>
 
-        <form onSubmit={onSubmit} className="flex flex-col gap-4">
-          <label className="flex flex-col gap-1 text-sm font-medium text-content">
-            Email
-            <input
-              type="email"
-              autoComplete="username"
-              {...register('email', { required: true })}
-              className="rounded-lg border border-line bg-surface px-3 py-2 text-sm font-normal text-content outline-none focus:border-brand focus:ring-2 focus:ring-brand/40"
-            />
-          </label>
-
-          <label className="flex flex-col gap-1 text-sm font-medium text-content">
-            Password
-            <input
-              type="password"
-              autoComplete="current-password"
-              {...register('password', { required: true })}
-              className="rounded-lg border border-line bg-surface px-3 py-2 text-sm font-normal text-content outline-none focus:border-brand focus:ring-2 focus:ring-brand/40"
-            />
-          </label>
-
-          {error && (
-            <p role="alert" className="text-sm text-red-600 dark:text-red-400">
-              {error}
+      <div className="w-full max-w-sm animate-fade-up">
+        <Card className="p-7">
+          <div className="mb-7 text-center">
+            <span
+              aria-hidden="true"
+              className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-brand text-lg font-bold text-brand-on shadow-card"
+            >
+              S
+            </span>
+            <h1 className="mt-4 text-xl font-semibold tracking-tight text-content">
+              Sehaty <span className="text-brand">Admin</span>
+            </h1>
+            <p className="mt-1 text-sm text-content-muted">
+              Sign in to the staff console
             </p>
-          )}
+          </div>
 
-          <Button type="submit" disabled={isSubmitting} className="mt-2 w-full">
-            {isSubmitting ? <Spinner label="Signing in" /> : 'Sign in'}
-          </Button>
-        </form>
-      </Card>
+          <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5">
+              <label
+                htmlFor="login-email"
+                className="text-sm font-medium text-content"
+              >
+                Email
+              </label>
+              <input
+                id="login-email"
+                type="email"
+                autoComplete="username"
+                aria-invalid={errors.email ? 'true' : undefined}
+                aria-describedby={errors.email ? 'login-email-error' : undefined}
+                placeholder="you@sehaty.ma"
+                {...register('email', { required: 'Email is required.' })}
+                className="field"
+              />
+              {errors.email && (
+                <span
+                  id="login-email-error"
+                  className="text-xs font-medium text-danger"
+                >
+                  {errors.email.message}
+                </span>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label
+                htmlFor="login-password"
+                className="text-sm font-medium text-content"
+              >
+                Password
+              </label>
+              <input
+                id="login-password"
+                type="password"
+                autoComplete="current-password"
+                aria-invalid={errors.password ? 'true' : undefined}
+                aria-describedby={
+                  errors.password ? 'login-password-error' : undefined
+                }
+                {...register('password', { required: 'Password is required.' })}
+                className="field"
+              />
+              {errors.password && (
+                <span
+                  id="login-password-error"
+                  className="text-xs font-medium text-danger"
+                >
+                  {errors.password.message}
+                </span>
+              )}
+            </div>
+
+            {error && (
+              <p
+                role="alert"
+                className="flex items-start gap-2 rounded-lg border border-danger/30 bg-danger-soft px-3 py-2.5 text-sm text-danger"
+              >
+                <IconAlert className="mt-0.5 h-4 w-4 shrink-0" />
+                {error}
+              </p>
+            )}
+
+            <Button type="submit" disabled={isSubmitting} className="mt-2 w-full">
+              {isSubmitting ? <Spinner label="Signing in" /> : 'Sign in'}
+            </Button>
+          </form>
+        </Card>
+
+        <p className="mt-6 text-center text-xs text-content-muted">
+          Internal staff console — authorised personnel only.
+        </p>
+      </div>
     </div>
   );
 }

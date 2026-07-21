@@ -20,6 +20,19 @@
   --brand-hover: 27 78 125; /* #1b4e7d */
   --brand-soft: 234 242 250; /* #eaf2fa */
   --on-brand: 255 255 255; /* text on a brand-filled surface */
+
+  /* Status tokens — pills, toasts, and inline validation. */
+  --success: 20 118 68; /* #147644 */
+  --success-soft: 231 246 237; /* #e7f6ed */
+  --warning: 158 82 8; /* #9e5208 */
+  --warning-soft: 253 243 226; /* #fdf3e2 */
+  --danger: 183 32 40; /* #b72028 */
+  --danger-soft: 253 234 235; /* #fdeaeb */
+
+  /* Elevation, tuned per theme (shadows need more presence on dark). */
+  --shadow-card: 0 1px 2px 0 rgb(16 42 67 / 0.06);
+  --shadow-raised:
+    0 4px 12px -2px rgb(16 42 67 / 0.1), 0 2px 4px -2px rgb(16 42 67 / 0.06);
 }
 
 /* Dark via OS preference, unless the user manually forced light. */
@@ -34,6 +47,17 @@
     --brand-hover: 123 184 234; /* #7bb8ea */
     --brand-soft: 29 44 63; /* #1d2c3f */
     --on-brand: 11 20 32; /* #0b1420 */
+
+    --success: 118 214 160; /* #76d6a0 */
+    --success-soft: 22 44 35; /* #162c23 */
+    --warning: 240 189 108; /* #f0bd6c */
+    --warning-soft: 49 40 24; /* #312818 */
+    --danger: 246 152 156; /* #f6989c */
+    --danger-soft: 54 27 32; /* #361b20 */
+
+    --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.35);
+    --shadow-raised:
+      0 4px 14px -2px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.4);
   }
 }
 
@@ -48,10 +72,107 @@
   --brand-hover: 123 184 234;
   --brand-soft: 29 44 63;
   --on-brand: 11 20 32;
+
+  --success: 118 214 160;
+  --success-soft: 22 44 35;
+  --warning: 240 189 108;
+  --warning-soft: 49 40 24;
+  --danger: 246 152 156;
+  --danger-soft: 54 27 32;
+
+  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.35);
+  --shadow-raised:
+    0 4px 14px -2px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.4);
 }
 
 body {
   background: rgb(var(--surface));
   color: rgb(var(--text));
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+@layer components {
+  /*
+   * Shared form field. Kept as a component class so every page's inputs and
+   * selects stay visually identical without repeating the utility soup.
+   */
+  .field {
+    @apply w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm font-normal text-content outline-none transition-colors duration-150 placeholder:text-content-muted/60;
+  }
+  .field:focus-visible,
+  .field:focus {
+    @apply border-brand ring-2 ring-brand/40;
+  }
+  .field[aria-invalid='true'] {
+    @apply border-danger;
+  }
+
+  /* Shimmering loading placeholder (replaces spinners for content areas). */
+  .skeleton {
+    @apply relative overflow-hidden rounded-md bg-line/60;
+  }
+  .skeleton::after {
+    content: '';
+    @apply absolute inset-0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(var(--surface-card) / 0.7),
+      transparent
+    );
+    animation: shimmer 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Honour reduced-motion preferences globally. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

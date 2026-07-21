@@ -3,8 +3,17 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Button, Card, Spinner } from '@sehaty/ui';
+import { Card } from '@sehaty/ui';
 import { ConsoleShell } from '@/components/ConsoleShell';
+import {
+  EmptyState,
+  ErrorState,
+  PageHeader,
+  StatusPill,
+  TableSkeleton,
+  type PillTone,
+} from '@/components/ui';
+import { IconRepeat } from '@/components/icons';
 import {
   ApiError,
   getToken,
@@ -17,26 +26,12 @@ interface FilterForm {
   status: 'ALL' | SubscriptionStatus;
 }
 
-const STATUS_STYLES: Record<string, string> = {
-  ACTIVE: 'border-brand/30 bg-brand-soft text-brand',
-  TRIALING:
-    'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/60 dark:bg-amber-950/40 dark:text-amber-300',
-  PAST_DUE:
-    'border-red-200 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300',
-  CANCELLED: 'border-line bg-surface text-content-muted',
+const STATUS_TONES: Record<string, PillTone> = {
+  ACTIVE: 'success',
+  TRIALING: 'brand',
+  PAST_DUE: 'warning',
+  CANCELLED: 'neutral',
 };
-
-function StatusBadge({ status }: { status: string }) {
-  const styles =
-    STATUS_STYLES[status] ?? 'border-line bg-surface text-content-muted';
-  return (
-    <span
-      className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium uppercase tracking-wide ${styles}`}
-    >
-      {status.replace('_', ' ')}
-    </span>
-  );
-}
 
 const dateFmt = (iso: string) =>
   new Date(iso).toLocaleDateString(undefined, {
@@ -93,73 +88,78 @@ export default function SubscriptionsPage() {
     void load();
   }, [load, router]);
 
-  const selectClass =
-    'rounded-lg border border-line bg-surface px-3 py-2 text-sm font-normal text-content outline-none focus:border-brand focus:ring-2 focus:ring-brand/40';
-
   return (
     <ConsoleShell>
       <div className="mx-auto max-w-5xl">
-        <header className="mb-6">
-          <h1 className="text-2xl font-semibold text-content">Subscriptions</h1>
-          <p className="mt-1 text-sm text-content-muted">
-            Doctor subscription plans and their billing status.
-          </p>
-        </header>
+        <PageHeader
+          title="Subscriptions"
+          description="Doctor subscription plans and their billing status."
+          actions={
+            !loading && !error ? (
+              <StatusPill tone="neutral" dot={false}>
+                {subscriptions.length} shown
+              </StatusPill>
+            ) : undefined
+          }
+        />
 
         <form className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end">
-          <label className="flex flex-col gap-1 text-sm font-medium text-content">
-            Status
-            <select {...register('status')} className={selectClass}>
+          <div className="flex flex-col gap-1.5">
+            <label
+              htmlFor="filter-status"
+              className="text-sm font-medium text-content"
+            >
+              Status
+            </label>
+            <select
+              id="filter-status"
+              {...register('status')}
+              className="field sm:w-44"
+            >
               <option value="ALL">All</option>
               <option value="TRIALING">Trialing</option>
               <option value="ACTIVE">Active</option>
               <option value="PAST_DUE">Past due</option>
               <option value="CANCELLED">Cancelled</option>
             </select>
-          </label>
+          </div>
         </form>
 
         {loading ? (
-          <div className="flex items-center gap-3 py-16 text-content-muted">
-            <Spinner />
-            <span>Loading subscriptions…</span>
-          </div>
+          <TableSkeleton rows={7} />
         ) : error ? (
-          <Card className="border-red-200 bg-red-50 dark:border-red-900/60 dark:bg-red-950/40">
-            <p role="alert" className="text-sm text-red-700 dark:text-red-300">
-              {error}
-            </p>
-            <Button
-              variant="secondary"
-              className="mt-4"
-              onClick={() => void load()}
-            >
-              Retry
-            </Button>
-          </Card>
+          <ErrorState message={error} onRetry={() => void load()} />
         ) : subscriptions.length === 0 ? (
-          <Card className="text-center">
-            <p className="text-sm text-content-muted">
-              No subscriptions match the current filters.
-            </p>
-          </Card>
+          <EmptyState
+            icon={<IconRepeat className="h-6 w-6" />}
+            title="No subscriptions found"
+            hint="No subscriptions match the current filters. Try another status."
+          />
         ) : (
-          <Card className="p-0">
-            <div className="overflow-x-auto">
+          <Card className="animate-fade-up overflow-hidden p-0">
+            <div className="max-h-[70vh] overflow-auto">
               <table className="w-full min-w-[720px] border-collapse text-left text-sm">
-                <thead>
-                  <tr className="border-b border-line text-xs uppercase tracking-wide text-content-muted">
-                    <th className="px-4 py-3 font-medium">Doctor</th>
-                    <th className="px-4 py-3 font-medium">Plan</th>
-                    <th className="px-4 py-3 font-medium">Status</th>
-                    <th className="px-4 py-3 font-medium">Renews</th>
+                <thead className="sticky top-0 z-10 bg-surface-card shadow-[inset_0_-1px_0_rgb(var(--border))]">
+                  <tr className="text-xs uppercase tracking-wider text-content-muted">
+                    <th scope="col" className="px-4 py-3 font-semibold">
+                      Doctor
+                    </th>
+                    <th scope="col" className="px-4 py-3 font-semibold">
+                      Plan
+                    </th>
+                    <th scope="col" className="px-4 py-3 font-semibold">
+                      Status
+                    </th>
+                    <th scope="col" className="px-4 py-3 font-semibold">
+                      Renews
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {subscriptions.map((sub) => (
                     <tr
                       key={sub.id}
-                      className="border-b border-line last:border-0"
+                      className="border-b border-line transition-colors duration-150 last:border-0 hover:bg-brand/5"
                     >
                       <td className="px-4 py-3 font-medium text-content">
                         {sub.doctor_name ?? `Doctor #${sub.doctor_id}`}
@@ -168,13 +168,14 @@ export default function SubscriptionsPage() {
                         <span className="font-medium text-content">
                           {sub.plan_name}
                         </span>
-                        <span className="block text-xs text-content-muted">
-                          {priceFmt(sub.price_month, sub.currency)}
-                          <span className="text-content-muted"> /mo</span>
+                        <span className="block text-xs text-content-muted tabular-nums">
+                          {priceFmt(sub.price_month, sub.currency)} /mo
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <StatusBadge status={sub.status} />
+                        <StatusPill tone={STATUS_TONES[sub.status] ?? 'neutral'}>
+                          {sub.status.replace('_', ' ')}
+                        </StatusPill>
                       </td>
                       <td className="px-4 py-3 text-content-muted">
                         {dateFmt(sub.current_period_end)}
