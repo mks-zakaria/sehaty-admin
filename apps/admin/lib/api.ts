@@ -404,3 +404,44 @@ export function listAdminSubscriptions(
     `/api/v1/admin/subscriptions${qs ? `?${qs}` : ''}`,
   );
 }
+
+/**
+ * One doctor's billing position on the payments board
+ * (`GET /billing/admin/payments/board`).
+ *
+ * `action` is the operator's next step rather than a raw status: "suspended"
+ * means the agenda is already off, "grace" means it is days away, and
+ * "expiring_soon" is this week's phone call.
+ */
+export interface PaymentBoardRow {
+  doctor_id: number;
+  slug: string;
+  full_name: string;
+  city: string | null;
+  phone: string | null;
+  plan: string | null;
+  status: string | null;
+  current_period_end: string | null;
+  days_remaining: number | null;
+  amount_due: number;
+  open_invoices: number;
+  last_payment_at: string | null;
+  booking_enabled: boolean;
+  in_grace_period: boolean;
+  action: 'ok' | 'expiring_soon' | 'grace' | 'suspended' | 'never_subscribed';
+}
+
+export interface PaymentBoard {
+  rows: PaymentBoardRow[];
+  total_due: number;
+  suspended: number;
+  in_grace: number;
+  expiring_soon: number;
+}
+
+/** The collection list, already ordered by urgency server-side. */
+export function getPaymentBoard(limit = 200): Promise<PaymentBoard> {
+  return api.get<PaymentBoard>(
+    `/api/v1/billing/admin/payments/board?limit=${limit}`,
+  );
+}
