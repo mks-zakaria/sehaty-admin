@@ -4,6 +4,15 @@
 ### Features
 
 * **admin:** 2026 console redesign (shell, KPIs, tables, forms) ([7460ff0](https://github.com/mks-zakaria/sehaty-admin/commit/7460ff0b6f9994bc9b22463896d2ca559cc6ad97))
+* **admin:** console page for a doctor's landing template and content ([#16](https://github.com/mks-zakaria/sehaty-admin/issues/16)) ([eca2de8](https://github.com/mks-zakaria/sehaty-admin/commit/eca2de82a808ef941f3ed7ce2c71ad45f8b5f226))
+* **admin:** payments board for subscription collection ([#14](https://github.com/mks-zakaria/sehaty-admin/issues/14)) ([412c13d](https://github.com/mks-zakaria/sehaty-admin/commit/412c13d14b321e8cab22e98b0fdcba89bd5f755f))
+
+# [1.6.0](https://github.com/mks-zakaria/sehaty-admin/compare/v1.5.0...v1.6.0) (2026-07-27)
+
+
+### Features
+
+* **admin:** 2026 console redesign (shell, KPIs, tables, forms) ([7460ff0](https://github.com/mks-zakaria/sehaty-admin/commit/7460ff0b6f9994bc9b22463896d2ca559cc6ad97))
 * **admin:** payments board for subscription collection ([#14](https://github.com/mks-zakaria/sehaty-admin/issues/14)) ([412c13d](https://github.com/mks-zakaria/sehaty-admin/commit/412c13d14b321e8cab22e98b0fdcba89bd5f755f))
 
 # [1.6.0](https://github.com/mks-zakaria/sehaty-admin/compare/v1.5.0...v1.6.0) (2026-07-21)
