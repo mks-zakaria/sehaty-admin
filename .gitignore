@@ -33,3 +33,6 @@ next-env.d.ts
 
 # Claude Code session files
 .claude/
+
+# Vercel local link
+.vercel/
