@@ -31,6 +31,7 @@ const NAV_SECTIONS: NavSection[] = [
   { label: 'Users', href: '/users', icon: IconUsers },
   { label: 'Subscriptions', href: '/subscriptions', icon: IconRepeat },
   { label: 'Payments', href: '/payments', icon: IconWallet },
+  { label: 'Landing pages', href: '/landing', icon: IconSliders },
   { label: 'Reviews', href: '/moderation', icon: IconStar },
   { label: 'Ranking', href: '/ranking', icon: IconSliders },
 ];

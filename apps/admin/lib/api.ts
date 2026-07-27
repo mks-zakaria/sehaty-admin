@@ -445,3 +445,79 @@ export function getPaymentBoard(limit = 200): Promise<PaymentBoard> {
     `/api/v1/billing/admin/payments/board?limit=${limit}`,
   );
 }
+
+/* --- Landing page configuration ----------------------------------------- */
+
+/** One act a doctor performs, with an optional published price. */
+export interface LandingService {
+  label: string;
+  price: number | null;
+}
+
+export interface LandingFaq {
+  q: string;
+  a: string;
+}
+
+/**
+ * A doctor's resolved landing configuration
+ * (`GET /admin/doctors/{id}/landing`).
+ *
+ * `template_is_default` is true when the template was inherited from the
+ * doctor's specialty rather than chosen — the console shows that so staff can
+ * see what they are about to override.
+ *
+ * Content fields come back empty unless `is_personalized`; that flag is the
+ * paid tier and is recorded when the pack sells, not when content is typed.
+ */
+export interface LandingConfig {
+  template: string;
+  template_is_default: boolean;
+  accent: string | null;
+  section_order: string[];
+  services: LandingService[];
+  equipment: string[];
+  faq: { question: string; answer: string }[];
+  tagline: string | null;
+  is_personalized: boolean;
+}
+
+/** Partial update — anything omitted is left untouched. */
+export interface LandingConfigInput {
+  template?: string | null;
+  accent?: string | null;
+  services?: LandingService[];
+  equipment?: string[];
+  faq?: LandingFaq[];
+  tagline?: string | null;
+}
+
+/** Template keys the landing app can actually render. */
+export function listLandingTemplates(): Promise<string[]> {
+  return api.get<string[]>('/api/v1/admin/doctors/templates');
+}
+
+export function getLandingConfig(doctorId: number): Promise<LandingConfig> {
+  return api.get<LandingConfig>(`/api/v1/admin/doctors/${doctorId}/landing`);
+}
+
+export function updateLandingConfig(
+  doctorId: number,
+  input: LandingConfigInput,
+): Promise<LandingConfig> {
+  return api.put<LandingConfig>(
+    `/api/v1/admin/doctors/${doctorId}/landing`,
+    input,
+  );
+}
+
+/** Record that the doctor is (or is no longer) on the paid page. */
+export function setLandingPersonalized(
+  doctorId: number,
+  enabled: boolean,
+): Promise<LandingConfig> {
+  return api.post<LandingConfig>(
+    `/api/v1/admin/doctors/${doctorId}/landing/personalized`,
+    { enabled },
+  );
+}
