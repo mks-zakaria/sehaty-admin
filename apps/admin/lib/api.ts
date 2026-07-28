@@ -643,3 +643,31 @@ export function getProspects(
   qs.set('limit', String(params.limit ?? 500));
   return api.get<ProspectBoard>(`/api/v1/admin/prospects?${qs.toString()}`);
 }
+
+/* --- Onboarding: give an imported doctor a login --------------------------- */
+
+export interface AccessGrant {
+  doctor_id: number;
+  slug: string;
+  full_name: string;
+  email: string;
+  claim_status: string;
+}
+
+/**
+ * Attach credentials to a doctor's existing page.
+ *
+ * Deliberately not "register a doctor": registering afresh would create a
+ * second profile under a new slug, and the old slug may already be printed on
+ * a plaque in their waiting room.
+ */
+export function grantDoctorAccess(
+  doctorId: number,
+  email: string,
+  password: string,
+): Promise<AccessGrant> {
+  return api.post<AccessGrant>(`/api/v1/admin/doctors/${doctorId}/access`, {
+    email,
+    password,
+  });
+}
