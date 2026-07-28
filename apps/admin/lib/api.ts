@@ -521,3 +521,63 @@ export function setLandingPersonalized(
     { enabled },
   );
 }
+
+/* --- Doctor profile (admin edit) ---------------------------------------- */
+
+export interface DoctorOpeningHours {
+  weekday: number;
+  ranges: [string, string][];
+}
+
+/** The doctor's full profile as staff see it (`GET /admin/doctors/{id}/profile`). */
+export interface AdminDoctorProfile {
+  id: number;
+  slug: string;
+  full_name: string;
+  city: string | null;
+  district: string | null;
+  address: string | null;
+  consultation_fee: number | null;
+  phone_fixe: string | null;
+  phone_mobile: string | null;
+  whatsapp: string | null;
+  opening_hours: DoctorOpeningHours[];
+  insurances: string[];
+  tiers_payant: boolean;
+  verification_status: string;
+  claim_status: string;
+}
+
+/**
+ * Partial profile edit — only the keys present are written.
+ *
+ * This is the only operator path to opening hours and insurance: the importer
+ * can carry them in bulk, but an imported doctor has no login and cannot enter
+ * them themselves.
+ */
+export type AdminDoctorProfileInput = Partial<{
+  city: string | null;
+  district: string | null;
+  address: string | null;
+  consultation_fee: number | null;
+  phone_fixe: string | null;
+  phone_mobile: string | null;
+  whatsapp: string | null;
+  opening_hours: DoctorOpeningHours[];
+  insurances: string[];
+  tiers_payant: boolean;
+}>;
+
+export function getDoctorProfile(doctorId: number): Promise<AdminDoctorProfile> {
+  return api.get<AdminDoctorProfile>(`/api/v1/admin/doctors/${doctorId}/profile`);
+}
+
+export function updateDoctorProfile(
+  doctorId: number,
+  input: AdminDoctorProfileInput,
+): Promise<AdminDoctorProfile> {
+  return api.put<AdminDoctorProfile>(
+    `/api/v1/admin/doctors/${doctorId}/profile`,
+    input,
+  );
+}
