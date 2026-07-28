@@ -581,3 +581,56 @@ export function updateDoctorProfile(
     input,
   );
 }
+
+/* --- Field list (prospection) -------------------------------------------- */
+
+/** One doctor as a sales prospect: where they stand and how to drive there. */
+export interface ProspectRow {
+  doctor_id: number;
+  slug: string;
+  full_name: string;
+  specialty: string | null;
+  city: string | null;
+  district: string | null;
+  address: string | null;
+  phone_fixe: string | null;
+  phone_mobile: string | null;
+  whatsapp: string | null;
+  lat: number | null;
+  lng: number | null;
+  claim_status: string;
+  onboarded: boolean;
+  source: string | null;
+  /** "landing" — the free page. "landing_rdv" — page plus booking engine. */
+  plan: 'landing' | 'landing_rdv';
+  booking_enabled: boolean;
+  subscription_status: string | null;
+  is_personalized: boolean;
+  /** Coordinates when known, otherwise the written address — feed it to Maps. */
+  maps_query: string;
+}
+
+export interface ProspectBoard {
+  rows: ProspectRow[];
+  total: number;
+  onboarded: number;
+  paying: number;
+  districts: string[];
+}
+
+/** The field list, already ordered district-then-name so it reads as a route. */
+export function getProspects(
+  params: {
+    district?: string;
+    onboarded?: boolean;
+    plan?: 'landing' | 'landing_rdv';
+    limit?: number;
+  } = {},
+): Promise<ProspectBoard> {
+  const qs = new URLSearchParams();
+  if (params.district) qs.set('district', params.district);
+  if (params.onboarded !== undefined) qs.set('onboarded', String(params.onboarded));
+  if (params.plan) qs.set('plan', params.plan);
+  qs.set('limit', String(params.limit ?? 500));
+  return api.get<ProspectBoard>(`/api/v1/admin/prospects?${qs.toString()}`);
+}
