@@ -2,12 +2,32 @@ import axios, { AxiosError, type AxiosInstance } from 'axios';
 
 const TOKEN_KEY = 'sehaty-admin-token';
 
+/** Where the API lives when nothing has been configured for a deployed build. */
+const PRODUCTION_API = 'https://api.157.245.43.196.sslip.io';
+
 /**
- * Base URL for the Sehaty API. Overridable per-environment via
- * NEXT_PUBLIC_API_URL; defaults to the local API for development.
+ * Base URL for the Sehaty API.
+ *
+ * NEXT_PUBLIC_API_URL wins. Without it, a build falls back on where it is
+ * running rather than on localhost: a Vercel preview built without the variable
+ * used to ship pointing at `http://localhost:8000`, so every request failed
+ * against a machine that was not there — and the browser reported the redirect
+ * as a CORS error, which sends you looking in entirely the wrong place.
+ *
+ * Localhost stays the default only when the page is itself served from
+ * localhost, which is the one case where it is what you meant.
  */
-const BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? 'http://localhost:8000';
+function resolveBaseUrl(): string {
+  const configured = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '');
+  if (configured) return configured;
+  if (typeof window !== 'undefined') {
+    const { hostname } = window.location;
+    if (hostname !== 'localhost' && hostname !== '127.0.0.1') return PRODUCTION_API;
+  }
+  return 'http://localhost:8000';
+}
+
+const BASE_URL = resolveBaseUrl();
 
 export function getToken(): string | null {
   if (typeof window === 'undefined') return null;
