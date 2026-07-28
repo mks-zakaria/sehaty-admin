@@ -1,3 +1,10 @@
+# [1.11.0](https://github.com/mks-zakaria/sehaty-admin/compare/v1.10.0...v1.11.0) (2026-07-28)
+
+
+### Features
+
+* **admin:** hand the doctor a login at the end of the visit ([#21](https://github.com/mks-zakaria/sehaty-admin/issues/21)) ([ab2fc23](https://github.com/mks-zakaria/sehaty-admin/commit/ab2fc239a397af5cadd5ab97a340b82ef85e5873))
+
 # [1.10.0](https://github.com/mks-zakaria/sehaty-admin/compare/v1.9.0...v1.10.0) (2026-07-28)
 
 
