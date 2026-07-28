@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { ConsoleShell } from '@/components/ConsoleShell';
+import { DoctorProfilePanel } from '@/components/DoctorProfilePanel';
 import {
   EmptyState,
   ErrorState,
@@ -212,6 +213,17 @@ export default function LandingPage() {
 
               {selected && config && (
                 <div className="space-y-5">
+                  {/* Intake first — it is what you collect while sitting with
+                      the doctor, and it is the only path to these fields. */}
+                  <details open className="rounded-lg border border-token p-4">
+                    <summary className="cursor-pointer text-sm font-semibold text-content">
+                      Contact, hours and insurance
+                    </summary>
+                    <div className="mt-4">
+                      <DoctorProfilePanel doctorId={selected.id} />
+                    </div>
+                  </details>
+
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <h2 className="text-lg font-semibold text-content">
                       {selected.full_name ?? selected.email}
