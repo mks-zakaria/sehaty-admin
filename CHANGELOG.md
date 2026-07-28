@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/mks-zakaria/sehaty-admin/compare/v1.8.0...v1.9.0) (2026-07-28)
+
+
+### Features
+
+* **admin:** the field list, with a driving mode ([#19](https://github.com/mks-zakaria/sehaty-admin/issues/19)) ([efe730c](https://github.com/mks-zakaria/sehaty-admin/commit/efe730c550cc94dd44bbc21daef1ab13b41a2c0b))
+
 # [1.8.0](https://github.com/mks-zakaria/sehaty-admin/compare/v1.7.0...v1.8.0) (2026-07-28)
 
 
