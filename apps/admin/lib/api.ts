@@ -537,6 +537,10 @@ export interface AdminDoctorProfile {
   city: string | null;
   district: string | null;
   address: string | null;
+  lat: number | null;
+  lng: number | null;
+  /** EXACT once someone has dropped a real pin; APPROXIMATE while geocoded. */
+  geo_precision: string | null;
   consultation_fee: number | null;
   phone_fixe: string | null;
   phone_mobile: string | null;
@@ -559,6 +563,9 @@ export type AdminDoctorProfileInput = Partial<{
   city: string | null;
   district: string | null;
   address: string | null;
+  /** Sending both stamps the pin EXACT — it can only have come from a person. */
+  lat: number | null;
+  lng: number | null;
   consultation_fee: number | null;
   phone_fixe: string | null;
   phone_mobile: string | null;
@@ -608,6 +615,8 @@ export interface ProspectRow {
   is_personalized: boolean;
   /** Coordinates when known, otherwise the written address — feed it to Maps. */
   maps_query: string;
+  /** True while the pin is a geocoded centroid or missing — fix it on the visit. */
+  needs_pin: boolean;
 }
 
 export interface ProspectBoard {
