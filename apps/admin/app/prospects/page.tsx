@@ -239,6 +239,11 @@ export default function ProspectsPage() {
                     {row.source === 'IMPORT' && (
                       <div className="mt-1 text-xs text-muted">imported</div>
                     )}
+                    {/* The visit is the only cheap chance to fix this, so it
+                        has to be visible before setting off, not after. */}
+                    {row.needs_pin && (
+                      <div className="mt-1 text-xs text-warning">needs a pin</div>
+                    )}
                   </td>
                   <td className="px-3 py-2">
                     <StatusPill tone={PLAN_TONE[row.plan]}>{PLAN_LABEL[row.plan]}</StatusPill>

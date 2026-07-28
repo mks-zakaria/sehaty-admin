@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { LocationCapture } from '@/components/LocationCapture';
 import {
   ApiError,
   getDoctorProfile,
@@ -81,6 +82,9 @@ export function DoctorProfilePanel({ doctorId }: { doctorId: number }) {
   const [mobile, setMobile] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [district, setDistrict] = useState('');
+  // Held separately from `profile` so an unsaved pin is visible before it is
+  // written, and so the save can tell "picked now" from "already on file".
+  const [pin, setPin] = useState<{ lat: number; lng: number } | null>(null);
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -100,6 +104,7 @@ export function DoctorProfilePanel({ doctorId }: { doctorId: number }) {
         setMobile(p.phone_mobile ?? '');
         setWhatsapp(p.whatsapp ?? '');
         setDistrict(p.district ?? '');
+        setPin(null);
       })
       .catch((err) => {
         if (alive) {
@@ -124,8 +129,12 @@ export function DoctorProfilePanel({ doctorId }: { doctorId: number }) {
         opening_hours: toHours(rows),
         insurances,
         tiers_payant: tiersPayant,
+        // Only sent when a pin was taken during this visit. Sending the stored
+        // one back would re-stamp a geocoded centroid as EXACT.
+        ...(pin ? { lat: pin.lat, lng: pin.lng } : {}),
       });
       setProfile(updated);
+      setPin(null);
       setSaved(true);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Failed to save.');
@@ -170,6 +179,13 @@ export function DoctorProfilePanel({ doctorId }: { doctorId: number }) {
           />
         </label>
       </div>
+
+      <LocationCapture
+        lat={pin?.lat ?? profile.lat}
+        lng={pin?.lng ?? profile.lng}
+        precision={pin ? 'EXACT' : profile.geo_precision}
+        onPick={(lat, lng) => setPin({ lat, lng })}
+      />
 
       <fieldset>
         <legend className="mb-1 text-sm font-medium text-content">Opening hours</legend>
