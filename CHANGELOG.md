@@ -1,3 +1,10 @@
+## [1.11.1](https://github.com/mks-zakaria/sehaty-admin/compare/v1.11.0...v1.11.1) (2026-07-28)
+
+
+### Bug Fixes
+
+* **admin:** a deployed build no longer falls back to localhost ([#22](https://github.com/mks-zakaria/sehaty-admin/issues/22)) ([c0b120d](https://github.com/mks-zakaria/sehaty-admin/commit/c0b120d0dc67c47a1bfeb410f59e0dd02e22463e))
+
 # [1.11.0](https://github.com/mks-zakaria/sehaty-admin/compare/v1.10.0...v1.11.0) (2026-07-28)
 
 
