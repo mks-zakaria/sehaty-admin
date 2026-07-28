@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/mks-zakaria/sehaty-admin/compare/v1.9.0...v1.10.0) (2026-07-28)
+
+
+### Features
+
+* **admin:** capture the exact location during onboarding ([#20](https://github.com/mks-zakaria/sehaty-admin/issues/20)) ([dcb2731](https://github.com/mks-zakaria/sehaty-admin/commit/dcb2731903ab02bc9300f5adedecd9dda12afbe5))
+
 # [1.9.0](https://github.com/mks-zakaria/sehaty-admin/compare/v1.8.0...v1.9.0) (2026-07-28)
 
 
