@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { GrantAccess } from '@/components/GrantAccess';
 import { LocationCapture } from '@/components/LocationCapture';
 import {
   ApiError,
@@ -180,6 +181,8 @@ export function DoctorProfilePanel({ doctorId }: { doctorId: number }) {
         </label>
       </div>
 
+      {/* Last step of the visit, so it sits at the end of the form: the login
+          is what turns a page they were shown into an agenda they can open. */}
       <LocationCapture
         lat={pin?.lat ?? profile.lat}
         lng={pin?.lng ?? profile.lng}
@@ -284,6 +287,10 @@ export function DoctorProfilePanel({ doctorId }: { doctorId: number }) {
       >
         {busy ? 'Saving…' : 'Save profile'}
       </button>
+
+      {profile.claim_status !== 'REMOVAL_REQUESTED' && (
+        <GrantAccess doctorId={doctorId} slug={profile.slug} />
+      )}
     </div>
   );
 }
