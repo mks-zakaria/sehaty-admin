@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/mks-zakaria/sehaty-admin/compare/v1.7.0...v1.8.0) (2026-07-28)
+
+
+### Features
+
+* **admin:** doctor intake panel for contact, hours and insurance ([#18](https://github.com/mks-zakaria/sehaty-admin/issues/18)) ([4e22c2f](https://github.com/mks-zakaria/sehaty-admin/commit/4e22c2fb97a36120ddc0a69afbf98b943815aced))
+
 # [1.6.0](https://github.com/mks-zakaria/sehaty-admin/compare/v1.5.0...v1.6.0) (2026-07-27)
 
 
