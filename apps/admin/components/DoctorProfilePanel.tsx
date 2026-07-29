@@ -25,10 +25,8 @@ import {
  * add-a-range builder.
  */
 
-const FIELD =
-  'w-full rounded-lg border border-token bg-card px-3 py-2 text-sm text-content';
-const TIME =
-  'rounded-lg border border-token bg-card px-2 py-1 text-sm text-content';
+const FIELD = 'field';
+const TIME = 'field';
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -258,7 +256,7 @@ export function DoctorProfilePanel({ doctorId }: { doctorId: number }) {
                 className={`rounded-full px-3 py-1 text-sm font-medium ${
                   active
                     ? 'bg-brand-600 text-white'
-                    : 'border border-token text-content'
+                    : 'border border-line text-content'
                 }`}
               >
                 {code.toUpperCase()}

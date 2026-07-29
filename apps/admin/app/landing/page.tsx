@@ -38,8 +38,7 @@ import {
  * recording the sale must not require re-entering their content.
  */
 
-const FIELD =
-  'w-full rounded-lg border border-token bg-card px-3 py-2 text-sm text-content';
+const FIELD = 'field';
 
 /** Blank row appended so there is always somewhere to type. */
 const EMPTY_SERVICE: LandingService = { label: '', price: null };
@@ -182,15 +181,15 @@ export default function LandingPage() {
         {!loading && doctors.length > 0 && (
           <div className="grid gap-6 md:grid-cols-[18rem_1fr]">
             {/* Doctor list */}
-            <div className="max-h-[70vh] overflow-y-auto rounded-xl border border-token">
+            <div className="max-h-[70vh] overflow-y-auto rounded-xl border border-line">
               <ul className="divide-y divide-token">
                 {doctors.map((doctor) => (
                   <li key={doctor.id}>
                     <button
                       type="button"
                       onClick={() => void select(doctor)}
-                      className={`w-full px-4 py-3 text-left text-sm transition-colors hover:bg-card ${
-                        selected?.id === doctor.id ? 'bg-card font-medium' : ''
+                      className={`w-full px-4 py-3 text-left text-sm transition-colors hover:bg-surface ${
+                        selected?.id === doctor.id ? 'bg-surface font-medium' : ''
                       }`}
                     >
                       <span className="block text-content">
@@ -204,7 +203,7 @@ export default function LandingPage() {
             </div>
 
             {/* Editor */}
-            <div className="rounded-xl border border-token p-5">
+            <div className="rounded-xl border border-line p-5">
               {!selected && (
                 <p className="text-sm text-muted">
                   Select a doctor to configure their public page.
@@ -215,7 +214,7 @@ export default function LandingPage() {
                 <div className="space-y-5">
                   {/* Intake first — it is what you collect while sitting with
                       the doctor, and it is the only path to these fields. */}
-                  <details open className="rounded-lg border border-token p-4">
+                  <details open className="rounded-lg border border-line p-4">
                     <summary className="cursor-pointer text-sm font-semibold text-content">
                       Contact, hours and insurance
                     </summary>
@@ -232,7 +231,7 @@ export default function LandingPage() {
                       type="button"
                       onClick={() => void togglePersonalized()}
                       disabled={busy}
-                      className="rounded-full border border-token px-3 py-1.5 text-sm font-medium text-content disabled:opacity-50"
+                      className="rounded-full border border-line px-3 py-1.5 text-sm font-medium text-content disabled:opacity-50"
                     >
                       <StatusPill tone={config.is_personalized ? 'success' : 'neutral'}>
                         {config.is_personalized ? 'Personalised (paid)' : 'Free page'}
@@ -242,7 +241,7 @@ export default function LandingPage() {
                   </div>
 
                   {!config.is_personalized && (
-                    <p className="rounded-lg border border-token bg-card px-3 py-2 text-xs text-muted">
+                    <p className="rounded-lg border border-line bg-surface px-3 py-2 text-xs text-muted">
                       This doctor is on the free page: the specialty template is applied, but
                       the content below stays private until you mark the page personalised.
                     </p>

@@ -72,8 +72,7 @@ function claimTone(status: string): PillTone {
   return 'neutral';
 }
 
-const FIELD =
-  'rounded-lg border border-token bg-card px-3 py-1.5 text-sm text-content';
+const FIELD = 'field';
 
 export default function ProspectsPage() {
   const router = useRouter();
@@ -200,9 +199,9 @@ export default function ProspectsPage() {
       )}
 
       {!loading && !error && rows.length > 0 && (
-        <div className="overflow-x-auto rounded-xl border border-token">
+        <div className="overflow-x-auto rounded-xl border border-line">
           <table className="w-full min-w-[62rem] text-sm">
-            <thead className="bg-surface-subtle text-left text-xs uppercase text-muted">
+            <thead className="bg-surface text-left text-xs uppercase text-muted">
               <tr>
                 <th className="w-10 px-3 py-2" />
                 <th className="px-3 py-2">Doctor</th>
@@ -215,7 +214,7 @@ export default function ProspectsPage() {
             </thead>
             <tbody>
               {rows.map((row) => (
-                <tr key={row.doctor_id} className="border-t border-token align-top">
+                <tr key={row.doctor_id} className="border-t border-line align-top">
                   <td className="px-3 py-2">
                     <input
                       type="checkbox"
@@ -269,13 +268,13 @@ export default function ProspectsPage() {
                         href={mapsSearchUrl(row.maps_query)}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="rounded-lg border border-token px-2 py-1 text-content"
+                        className="rounded-lg border border-line px-2 py-1 text-content"
                       >
                         Maps
                       </a>
                       <a
                         href={`/landing?doctor=${row.doctor_id}`}
-                        className="rounded-lg border border-token px-2 py-1 text-content"
+                        className="rounded-lg border border-line px-2 py-1 text-content"
                       >
                         Page
                       </a>

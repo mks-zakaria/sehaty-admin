@@ -20,8 +20,7 @@ import { ApiError, grantDoctorAccess, type AccessGrant } from '@/lib/api';
  * waiting for a message that never arrives.
  */
 
-const FIELD =
-  'w-full rounded-lg border border-token bg-card px-3 py-2 text-sm text-content';
+const FIELD = 'field';
 
 /** Readable, typable on a phone keyboard, and not worth guessing. */
 function suggestPassword(): string {
@@ -57,7 +56,7 @@ export function GrantAccess({ doctorId, slug }: { doctorId: number; slug: string
           {granted.full_name} can now sign in — page {granted.slug} unchanged.
         </p>
         {/* Shown once, to be typed in front of them before you leave. */}
-        <div className="mt-2 rounded-lg border border-token bg-surface-subtle p-3 text-sm">
+        <div className="mt-2 rounded-lg border border-line bg-surface p-3 text-sm">
           <div dir="ltr">
             <strong>{granted.email}</strong>
           </div>
