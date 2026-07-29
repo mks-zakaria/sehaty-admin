@@ -1,3 +1,10 @@
+## [1.11.2](https://github.com/mks-zakaria/sehaty-admin/compare/v1.11.1...v1.11.2) (2026-07-29)
+
+
+### Bug Fixes
+
+* **admin:** dropdowns were invisible in dark mode ([#23](https://github.com/mks-zakaria/sehaty-admin/issues/23)) ([f1f0b60](https://github.com/mks-zakaria/sehaty-admin/commit/f1f0b60525fb6b0e16d22a6eada148bd122c3ac8))
+
 ## [1.11.1](https://github.com/mks-zakaria/sehaty-admin/compare/v1.11.0...v1.11.1) (2026-07-28)
 
 
