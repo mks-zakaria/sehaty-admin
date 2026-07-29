@@ -36,6 +36,7 @@ const NAV_SECTIONS: NavSection[] = [
   { label: 'Landing pages', href: '/landing', icon: IconSliders },
   { label: 'Reviews', href: '/moderation', icon: IconStar },
   { label: 'Ranking', href: '/ranking', icon: IconSliders },
+  { label: 'Backup', href: '/backup', icon: IconRepeat },
 ];
 
 function Wordmark() {
