@@ -751,3 +751,34 @@ export function getChatbotStatus(): Promise<{ available: boolean }> {
 export function translateBio(text: string, locale: string): Promise<TranslationDraft> {
   return api.post<TranslationDraft>('/api/v1/chatbot/translate', { text, locale });
 }
+
+/* --- Backup & restore ------------------------------------------------------ */
+
+export interface RestoreReport {
+  total: number;
+  created: number;
+  updated: number;
+  skipped_removed: number;
+  unchanged: number;
+  errors: string[];
+}
+
+/** The whole directory: pins, presentations, tariffs, hours, claims. */
+export function exportBackup(city?: string): Promise<unknown> {
+  const qs = city ? `?city=${encodeURIComponent(city)}` : '';
+  return api.get<unknown>(`/api/v1/admin/backup${qs}`);
+}
+
+/**
+ * Put a backup back.
+ *
+ * `dryRun` defaults to true and writes nothing — the report says what *would*
+ * change. An uploaded file is almost always older than the database it is being
+ * applied to, so seeing the diff first is the point.
+ */
+export function restoreBackup(payload: unknown, dryRun = true): Promise<RestoreReport> {
+  return api.post<RestoreReport>(
+    `/api/v1/admin/backup/restore?dry_run=${dryRun}`,
+    payload,
+  );
+}
