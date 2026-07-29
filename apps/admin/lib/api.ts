@@ -557,6 +557,7 @@ export interface AdminDoctorProfile {
   city: string | null;
   district: string | null;
   address: string | null;
+  bio_i18n: Record<string, string>;
   lat: number | null;
   lng: number | null;
   /** EXACT once someone has dropped a real pin; APPROXIMATE while geocoded. */
@@ -583,6 +584,7 @@ export type AdminDoctorProfileInput = Partial<{
   city: string | null;
   district: string | null;
   address: string | null;
+  bio_i18n: Record<string, string>;
   /** Sending both stamps the pin EXACT — it can only have come from a person. */
   lat: number | null;
   lng: number | null;
@@ -690,4 +692,62 @@ export function grantDoctorAccess(
     email,
     password,
   });
+}
+
+/* --- Onboarding ----------------------------------------------------------- */
+
+/** A doctor the operator might be standing in front of. */
+export interface DoctorMatch {
+  doctor_id: number;
+  slug: string;
+  full_name: string;
+  specialty: string | null;
+  city: string | null;
+  district: string | null;
+  address: string | null;
+  phone: string | null;
+  claim_status: string;
+  verification_status: string;
+  is_unclaimed: boolean;
+}
+
+/** Doctors whose name looks like the query, unclaimed first. */
+export function searchDoctors(q: string, limit = 12): Promise<DoctorMatch[]> {
+  return api.get<DoctorMatch[]>(
+    `/api/v1/admin/onboarding/search?q=${encodeURIComponent(q)}&limit=${limit}`,
+  );
+}
+
+/** Add a doctor the directory never had. 409 when the name already exists. */
+export function createDoctor(input: {
+  full_name: string;
+  city: string;
+  specialty_slug: string;
+  district?: string | null;
+  address?: string | null;
+}): Promise<DoctorMatch> {
+  return api.post<DoctorMatch>('/api/v1/admin/onboarding/doctors', input);
+}
+
+/* --- Chatbot -------------------------------------------------------------- */
+
+export interface TranslationDraft {
+  fr: string | null;
+  ar: string | null;
+  ary: string | null;
+}
+
+/** Whether a key is configured; checked before offering the button. */
+export function getChatbotStatus(): Promise<{ available: boolean }> {
+  return api.get<{ available: boolean }>('/api/v1/chatbot/status');
+}
+
+/**
+ * Draft a presentation in the other two languages.
+ *
+ * A draft, never a save — the operator reads it before it reaches a page.
+ * Throws ApiError(503) when no key is configured yet.
+ */
+export function translateBio(text: string, locale: string): Promise<TranslationDraft> {
+  return api.post<TranslationDraft>('/api/v1/chatbot/translate', { text, locale });
 }
