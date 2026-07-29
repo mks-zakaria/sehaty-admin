@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { BioEditor } from '@/components/BioEditor';
 import { GrantAccess } from '@/components/GrantAccess';
 import { LocationCapture } from '@/components/LocationCapture';
 import {
@@ -81,6 +82,8 @@ export function DoctorProfilePanel({ doctorId }: { doctorId: number }) {
   const [mobile, setMobile] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [district, setDistrict] = useState('');
+  const [bio, setBio] = useState<Record<string, string>>({});
+  const [fee, setFee] = useState('');
   // Held separately from `profile` so an unsaved pin is visible before it is
   // written, and so the save can tell "picked now" from "already on file".
   const [pin, setPin] = useState<{ lat: number; lng: number } | null>(null);
@@ -103,6 +106,8 @@ export function DoctorProfilePanel({ doctorId }: { doctorId: number }) {
         setMobile(p.phone_mobile ?? '');
         setWhatsapp(p.whatsapp ?? '');
         setDistrict(p.district ?? '');
+        setBio(p.bio_i18n ?? {});
+        setFee(p.consultation_fee != null ? String(p.consultation_fee) : '');
         setPin(null);
       })
       .catch((err) => {
@@ -128,6 +133,8 @@ export function DoctorProfilePanel({ doctorId }: { doctorId: number }) {
         opening_hours: toHours(rows),
         insurances,
         tiers_payant: tiersPayant,
+        bio_i18n: bio,
+        consultation_fee: fee.trim() ? Number(fee) : null,
         // Only sent when a pin was taken during this visit. Sending the stored
         // one back would re-stamp a geocoded centroid as EXACT.
         ...(pin ? { lat: pin.lat, lng: pin.lng } : {}),
@@ -181,6 +188,22 @@ export function DoctorProfilePanel({ doctorId }: { doctorId: number }) {
 
       {/* Last step of the visit, so it sits at the end of the form: the login
           is what turns a page they were shown into an agenda they can open. */}
+      <label className="block max-w-xs">
+        <span className="mb-1 block text-sm font-medium text-content">
+          Tarif de consultation (MAD)
+        </span>
+        <input
+          type="number"
+          inputMode="numeric"
+          value={fee}
+          onChange={(e) => setFee(e.target.value)}
+          placeholder="250"
+          className="field"
+        />
+      </label>
+
+      <BioEditor value={bio} onChange={setBio} />
+
       <LocationCapture
         lat={pin?.lat ?? profile.lat}
         lng={pin?.lng ?? profile.lng}

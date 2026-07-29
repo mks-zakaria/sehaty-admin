@@ -28,6 +28,7 @@ const NAV_SECTIONS: NavSection[] = [
   { label: 'Dashboard', href: '/dashboard', icon: IconGauge },
   { label: 'Accreditation', href: '/accreditation', icon: IconBadgeCheck },
   { label: 'Field list', href: '/prospects', icon: IconUsers },
+  { label: 'Onboard', href: '/onboarding', icon: IconBadgeCheck },
   { label: 'Billing', href: '/billing', icon: IconWallet },
   { label: 'Users', href: '/users', icon: IconUsers },
   { label: 'Subscriptions', href: '/subscriptions', icon: IconRepeat },
