@@ -11,6 +11,13 @@
  * of the OS-dark media query.
  */
 :root {
+  /* Tells the browser which palette to draw *native* controls with. A <select>
+     is styled by CSS only until it opens: the option list, the scrollbars and
+     the date pickers are painted by the OS, and without this they stay light on
+     a dark page — which is why the field looked right and the dropdown was
+     unreadable. */
+  color-scheme: light;
+
   --surface: 245 248 252; /* #f5f8fc */
   --surface-card: 255 255 255; /* #ffffff */
   --text: 27 61 94; /* #1b3d5e */
@@ -38,6 +45,7 @@
 /* Dark via OS preference, unless the user manually forced light. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
+    color-scheme: dark;
     --surface: 15 22 34; /* #0f1622 */
     --surface-card: 24 33 47; /* #18212f */
     --text: 230 237 245; /* #e6edf5 */
@@ -63,6 +71,7 @@
 
 /* Dark via manual toggle (wins over the media query). */
 :root[data-theme='dark'] {
+  color-scheme: dark;
   --surface: 15 22 34;
   --surface-card: 24 33 47;
   --text: 230 237 245;

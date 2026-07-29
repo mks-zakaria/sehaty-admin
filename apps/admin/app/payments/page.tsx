@@ -131,7 +131,7 @@ export default function PaymentsPage() {
             ].map(({ label, value, tone }) => (
               <div
                 key={label}
-                className="rounded-xl border border-token bg-card p-4"
+                className="rounded-xl border border-line bg-surface p-4"
               >
                 <p className="text-sm text-muted">{label}</p>
                 <p className="mt-1 flex items-center gap-2">
@@ -154,9 +154,9 @@ export default function PaymentsPage() {
         )}
 
         {!loading && !error && board && board.rows.length > 0 && (
-          <div className="overflow-x-auto rounded-xl border border-token">
+          <div className="overflow-x-auto rounded-xl border border-line">
             <table className="w-full min-w-[56rem] text-left text-sm">
-              <thead className="bg-card text-muted">
+              <thead className="bg-surface text-muted">
                 <tr>
                   <th className="px-4 py-3 font-medium">Doctor</th>
                   <th className="px-4 py-3 font-medium">Status</th>
