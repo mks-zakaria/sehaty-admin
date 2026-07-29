@@ -1,3 +1,10 @@
+# [1.13.0](https://github.com/mks-zakaria/sehaty-admin/compare/v1.12.0...v1.13.0) (2026-07-29)
+
+
+### Features
+
+* **admin:** backup and restore from the console ([#25](https://github.com/mks-zakaria/sehaty-admin/issues/25)) ([76836c7](https://github.com/mks-zakaria/sehaty-admin/commit/76836c71f2ed4d159ac8866a5a6d2fd99f7e7371))
+
 # [1.12.0](https://github.com/mks-zakaria/sehaty-admin/compare/v1.11.2...v1.12.0) (2026-07-29)
 
 
