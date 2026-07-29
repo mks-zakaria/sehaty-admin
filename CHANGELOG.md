@@ -1,3 +1,10 @@
+# [1.12.0](https://github.com/mks-zakaria/sehaty-admin/compare/v1.11.2...v1.12.0) (2026-07-29)
+
+
+### Features
+
+* **admin:** the whole visit on one screen ([#24](https://github.com/mks-zakaria/sehaty-admin/issues/24)) ([9dc23c5](https://github.com/mks-zakaria/sehaty-admin/commit/9dc23c5454f68ee2fa0b581764a3b8100c314973))
+
 ## [1.11.2](https://github.com/mks-zakaria/sehaty-admin/compare/v1.11.1...v1.11.2) (2026-07-29)
 
 
