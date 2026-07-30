@@ -1,3 +1,10 @@
+## [1.13.1](https://github.com/mks-zakaria/sehaty-admin/compare/v1.13.0...v1.13.1) (2026-07-30)
+
+
+### Bug Fixes
+
+* **admin:** every API call was going to /api/api/v1 and 404ing ([#26](https://github.com/mks-zakaria/sehaty-admin/issues/26)) ([4fdccfb](https://github.com/mks-zakaria/sehaty-admin/commit/4fdccfb56014ed08e231624e5341fe2757a6c1ee))
+
 # [1.13.0](https://github.com/mks-zakaria/sehaty-admin/compare/v1.12.0...v1.13.0) (2026-07-29)
 
 
