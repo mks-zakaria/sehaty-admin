@@ -19,7 +19,13 @@ const PRODUCTION_API = 'https://api.157.245.43.196.sslip.io';
  */
 function resolveBaseUrl(): string {
   const configured = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '');
-  if (configured) return configured;
+  // Every path in this file already begins `/api/v1/...`, so a base that ends
+  // in `/api` produces `/api/api/v1/...` and every call 404s. sehaty-front uses
+  // the opposite split — base `/api`, paths `/v1/...` — and the same env value
+  // gets set for both projects, which is exactly how this happened. Normalising
+  // here beats expecting whoever sets the variable to remember which repo wants
+  // which half.
+  if (configured) return configured.replace(/\/api$/, '');
   if (typeof window !== 'undefined') {
     const { hostname } = window.location;
     if (hostname !== 'localhost' && hostname !== '127.0.0.1') return PRODUCTION_API;
