@@ -5,13 +5,16 @@ import { useEffect, useState } from 'react';
 import { ConsoleShell } from '@/components/ConsoleShell';
 import { DoctorFinder } from '@/components/DoctorFinder';
 import { DoctorProfilePanel } from '@/components/DoctorProfilePanel';
+import { BookingSwitch } from '@/components/BookingSwitch';
+import { LandingModelPicker } from '@/components/LandingModelPicker';
 import { PageHeader, StatusPill } from '@/components/ui';
 import { getToken, type DoctorMatch } from '@/lib/api';
 
 /**
  * The whole visit on one screen, in the order it actually happens.
  *
- * Find them → fill in what they tell you → pin the door → hand over the login.
+ * Find them → pick their page design → open or close the agenda → fill in what
+ * they tell you → pin the door → hand over the login.
  * Those were four places before, and the two that were missing entirely are the
  * two that decide whether the sale is worth anything: an exact pin, and a
  * password the doctor can sign in with.
@@ -62,6 +65,18 @@ export default function OnboardingPage() {
               </button>
             </div>
           </div>
+
+          {/* Which of the four designs their page is built with. First because it
+              is the part the doctor has an opinion about, and the one thing in
+              this flow that is quicker to settle with them present than to guess
+              afterwards. */}
+          <LandingModelPicker doctorId={doctor.doctor_id} slug={doctor.slug} />
+
+          {/* The other half of the sale: whether this cabinet wants an agenda at
+              all. Settled with the doctor present, because "on" for someone whose
+              subscription lapsed still leaves booking shut and that is a
+              conversation, not a support ticket. */}
+          <BookingSwitch doctorId={doctor.doctor_id} />
 
           {/* Contact, hours, insurance, tariff, presentation, pin, login. Saving
               the hours also fills the bookable agenda — they are separate tables
