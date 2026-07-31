@@ -499,6 +499,13 @@ export interface LandingFaq {
 export interface LandingConfig {
   template: string;
   template_is_default: boolean;
+  /**
+   * Which of the four designs the page is built with. Independent of the
+   * template: the template decides which sections a specialty needs, the layout
+   * decides what the page looks like. Always applied, including on a free page.
+   */
+  layout: string;
+  layout_is_default: boolean;
   accent: string | null;
   section_order: string[];
   services: LandingService[];
@@ -511,6 +518,7 @@ export interface LandingConfig {
 /** Partial update — anything omitted is left untouched. */
 export interface LandingConfigInput {
   template?: string | null;
+  layout?: string | null;
   accent?: string | null;
   services?: LandingService[];
   equipment?: string[];
@@ -521,6 +529,16 @@ export interface LandingConfigInput {
 /** Template keys the landing app can actually render. */
 export function listLandingTemplates(): Promise<string[]> {
   return api.get<string[]>('/api/v1/admin/doctors/templates');
+}
+
+/**
+ * Page designs a doctor can be put on, in the order to offer them.
+ *
+ * Server-ordered rather than sorted: "classic" leads because it is what an
+ * untouched page already looks like.
+ */
+export function listLandingLayouts(): Promise<string[]> {
+  return api.get<string[]>('/api/v1/admin/doctors/layouts');
 }
 
 export function getLandingConfig(doctorId: number): Promise<LandingConfig> {
@@ -717,11 +735,33 @@ export interface DoctorMatch {
   is_unclaimed: boolean;
 }
 
-/** Doctors whose name looks like the query, unclaimed first. */
-export function searchDoctors(q: string, limit = 12): Promise<DoctorMatch[]> {
-  return api.get<DoctorMatch[]>(
-    `/api/v1/admin/onboarding/search?q=${encodeURIComponent(q)}&limit=${limit}`,
-  );
+/** A city the onboarding filter can offer, with how many doctors are in it. */
+export interface PlaceRef {
+  slug: string;
+  label: string;
+  doctor_count: number;
+}
+
+/**
+ * Cities that have at least one findable doctor, busiest first.
+ *
+ * Not the public `/api/v1/cities` list: that one counts only doctors a patient
+ * can see, and onboarding has to reach the pending pages too.
+ */
+export function listOnboardingCities(): Promise<PlaceRef[]> {
+  return api.get<PlaceRef[]>('/api/v1/admin/onboarding/cities');
+}
+
+/**
+ * Doctors whose name looks like the query, unclaimed first.
+ *
+ * `city` is a slug from {@link listOnboardingCities} and narrows to one place —
+ * how the operator tells two doctors with the same surname apart.
+ */
+export function searchDoctors(q: string, city?: string | null, limit = 12): Promise<DoctorMatch[]> {
+  const params = new URLSearchParams({ q, limit: String(limit) });
+  if (city) params.set('city', city);
+  return api.get<DoctorMatch[]>(`/api/v1/admin/onboarding/search?${params}`);
 }
 
 /** Add a doctor the directory never had. 409 when the name already exists. */
@@ -733,6 +773,53 @@ export function createDoctor(input: {
   address?: string | null;
 }): Promise<DoctorMatch> {
   return api.post<DoctorMatch>('/api/v1/admin/onboarding/doctors', input);
+}
+
+/* --- Booking switch (RDV per doctor) -------------------------------------- */
+
+/**
+ * Whether one doctor's agenda is open, and what decides it.
+ *
+ * Two independent causes, which the console has to keep apart: `reason`
+ * "switched_off" with `manually_disabled` means the cabinet does not want an
+ * agenda, and must not put them on a collections list. Everything else is money.
+ */
+export interface BookingState {
+  doctor_id: number;
+  booking_enabled: boolean;
+  status: string | null;
+  current_period_end: string | null;
+  in_grace_period: boolean;
+  reason:
+    | 'active'
+    | 'no_subscription'
+    | 'expired'
+    | 'cancelled'
+    | 'past_due'
+    | 'switched_off';
+  manually_disabled: boolean;
+}
+
+export function getBookingState(doctorId: number): Promise<BookingState> {
+  return api.get<BookingState>(`/api/v1/admin/doctors/${doctorId}/booking`);
+}
+
+/**
+ * Open or close the agenda.
+ *
+ * Opening also starts the free trial when the doctor has never subscribed —
+ * which is every doctor being sold their first pack. Returns the resulting
+ * state, not an acknowledgement: switching on a doctor whose subscription
+ * expired leaves booking off, and the operator needs to see that rather than
+ * promise otherwise.
+ */
+export function setBookingEnabled(
+  doctorId: number,
+  enabled: boolean,
+): Promise<BookingState> {
+  return api.put<BookingState>(`/api/v1/admin/doctors/${doctorId}/booking`, {
+    enabled,
+  });
 }
 
 /* --- Chatbot -------------------------------------------------------------- */
