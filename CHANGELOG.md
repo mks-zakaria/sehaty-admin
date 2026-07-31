@@ -1,3 +1,10 @@
+# [1.14.0](https://github.com/mks-zakaria/sehaty-admin/compare/v1.13.1...v1.14.0) (2026-07-31)
+
+
+### Features
+
+* **admin:** page design and agenda switch in the onboarding visit ([#27](https://github.com/mks-zakaria/sehaty-admin/issues/27)) ([e04d88b](https://github.com/mks-zakaria/sehaty-admin/commit/e04d88b7b2655709932d7b85ea6f9c4bee4573eb))
+
 ## [1.13.1](https://github.com/mks-zakaria/sehaty-admin/compare/v1.13.0...v1.13.1) (2026-07-30)
 
 
