@@ -665,11 +665,23 @@ export interface ProspectRow {
   needs_pin: boolean;
 }
 
+/**
+ * Counters describe the whole city/district scope, not the filtered page — so
+ * they hold still while the list is worked.
+ */
 export interface ProspectBoard {
   rows: ProspectRow[];
+  /** Rows on this page, after the filters and the row limit. */
+  shown: number;
+  /** Doctors in scope, before the filters and before the limit. */
   total: number;
   onboarded: number;
+  /** Live ACTIVE subscriptions. A trial is not counted here. */
   paying: number;
+  /** On the free 90-day trial — using the agenda, never asked for money yet. */
+  trialing: number;
+  /** Bought the Pack Présence. A one-off, independent of the agenda. */
+  presence: number;
   districts: string[];
 }
 

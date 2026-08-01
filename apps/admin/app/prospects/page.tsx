@@ -171,6 +171,9 @@ export default function ProspectsPage() {
         {board && (
           <span className="text-sm text-muted">
             {board.total} listed · {board.onboarded} onboarded · {board.paying} paying
+            {board.trialing > 0 && ` · ${board.trialing} in trial`}
+            {board.presence > 0 && ` · ${board.presence} pack présence`}
+            {board.shown < board.total && ` · showing ${board.shown}`}
           </span>
         )}
 
