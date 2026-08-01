@@ -1,3 +1,10 @@
+## [1.14.1](https://github.com/mks-zakaria/sehaty-admin/compare/v1.14.0...v1.14.1) (2026-08-01)
+
+
+### Bug Fixes
+
+* **prospects:** separate trials from paying in the board header ([#28](https://github.com/mks-zakaria/sehaty-admin/issues/28)) ([5d94858](https://github.com/mks-zakaria/sehaty-admin/commit/5d948582f07a41c4b17086aee1ed8dd7f6d29da2))
+
 # [1.14.0](https://github.com/mks-zakaria/sehaty-admin/compare/v1.13.1...v1.14.0) (2026-07-31)
 
 
