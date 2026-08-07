@@ -105,6 +105,17 @@ export const api = {
     const res = await http.put<T>(path, body ?? {});
     return res.data;
   },
+  /**
+   * PATCH sends only what changed. For an article that is the difference
+   * between fixing a title and resending a body the editor never opened.
+   */
+  patch: async <T>(path: string, body?: unknown): Promise<T> => {
+    const res = await http.patch<T>(path, body ?? {});
+    return res.data;
+  },
+  del: async (path: string): Promise<void> => {
+    await http.delete(path);
+  },
 };
 
 /**
@@ -886,4 +897,106 @@ export function restoreBackup(payload: unknown, dryRun = true): Promise<RestoreR
     `/api/v1/admin/backup/restore?dry_run=${dryRun}`,
     payload,
   );
+}
+
+// ---- Blog ----
+
+export type ArticleStatus = 'DRAFT' | 'PENDING' | 'PUBLISHED' | 'REJECTED';
+
+export interface ArticleSource {
+  work: string;
+  locator: string | null;
+}
+
+export interface ArticleImage {
+  brief: string | null;
+  alt: string | null;
+  url: string | null;
+  credit: string | null;
+}
+
+export interface ArticleValidation {
+  doctor_id: number;
+  full_name: string | null;
+  slug: string | null;
+  verdict: 'VALIDATED' | 'RECTIFIED' | 'ENRICHED';
+  note: string | null;
+}
+
+export interface Article {
+  id: number;
+  slug: string;
+  title: string;
+  summary: string | null;
+  body: string;
+  locale: string;
+  status: ArticleStatus;
+  specialty_slug: string | null;
+  published_at: string | null;
+  author_name: string | null;
+  author_slug: string | null;
+  sources: ArticleSource[];
+  images: ArticleImage[];
+  validations: ArticleValidation[];
+  helpful_votes: number;
+  total_votes: number;
+}
+
+export interface ArticleFilters {
+  status?: ArticleStatus;
+  locale?: string;
+  specialty_slug?: string;
+  search?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export function listArticles(filters: ArticleFilters = {}): Promise<Article[]> {
+  const qs = new URLSearchParams();
+  for (const [key, value] of Object.entries(filters)) {
+    if (value !== undefined && value !== '') qs.set(key, String(value));
+  }
+  return api.get<Article[]>(`/api/v1/admin/articles?${qs.toString()}`);
+}
+
+/** Only the fields present are changed; omitting one leaves it alone. */
+export interface ArticleEdit {
+  title?: string;
+  summary?: string;
+  body?: string;
+  locale?: string;
+  specialty_slug?: string;
+  images?: ArticleImage[];
+  sources?: ArticleSource[];
+}
+
+export function editArticle(id: number, patch: ArticleEdit): Promise<Article> {
+  return api.patch<Article>(`/api/v1/admin/articles/${id}`, patch);
+}
+
+export function deleteArticle(id: number): Promise<void> {
+  return api.del(`/api/v1/admin/articles/${id}`);
+}
+
+/**
+ * Publish, or send back with a reason.
+ *
+ * The same endpoint the doctor-written queue uses — publishing a platform draft
+ * and approving a doctor's submission are the same decision about the same
+ * object, and giving them two buttons would let them drift apart.
+ */
+export function reviewArticle(id: number, approve: boolean, note?: string): Promise<Article> {
+  return api.post<Article>(`/api/v1/admin/articles/${id}/review`, { approve, note });
+}
+
+export function createArticle(payload: {
+  title: string;
+  body: string;
+  sources: ArticleSource[];
+  summary?: string;
+  locale?: string;
+  specialty_slug?: string;
+  images?: ArticleImage[];
+}): Promise<Article> {
+  return api.post<Article>('/api/v1/admin/articles', payload);
 }

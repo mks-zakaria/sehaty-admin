@@ -8,6 +8,7 @@ import { ThemeToggle } from './ThemeToggle';
 import {
   IconBadgeCheck,
   IconGauge,
+  IconInbox,
   IconLogout,
   IconMenu,
   IconRepeat,
@@ -34,6 +35,7 @@ const NAV_SECTIONS: NavSection[] = [
   { label: 'Subscriptions', href: '/subscriptions', icon: IconRepeat },
   { label: 'Payments', href: '/payments', icon: IconWallet },
   { label: 'Landing pages', href: '/landing', icon: IconSliders },
+  { label: 'Blog', href: '/blog', icon: IconInbox },
   { label: 'Reviews', href: '/moderation', icon: IconStar },
   { label: 'Ranking', href: '/ranking', icon: IconSliders },
   { label: 'Backup', href: '/backup', icon: IconRepeat },
