@@ -1,3 +1,10 @@
+# [1.15.0](https://github.com/mks-zakaria/sehaty-admin/compare/v1.14.1...v1.15.0) (2026-08-07)
+
+
+### Features
+
+* **blog:** article editor in the console ([#29](https://github.com/mks-zakaria/sehaty-admin/issues/29)) ([ac4c313](https://github.com/mks-zakaria/sehaty-admin/commit/ac4c3133d95ec854c77a84954e8d50c4b0126f5a))
+
 ## [1.14.1](https://github.com/mks-zakaria/sehaty-admin/compare/v1.14.0...v1.14.1) (2026-08-01)
 
 
